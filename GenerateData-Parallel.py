@@ -9,10 +9,7 @@ Created on Sun Sep 27 19:59:10 2020
 """
 import Core.Misc as Misc
 import Core.SIMTraces as SIMTraces
-import Core.RandomTraceGenerator as R
 import numpy as np
-import json
-import csv
 import time
 import os
 
@@ -21,12 +18,11 @@ from Core.DataHandler import DataLoader
 from datetime import date
 import multiprocessing
 import Core.TraceGenerator as TraceGenerator
-import csv 
 
-def GenTraces(TraceGen,genome, transform,Params):
-    # print('\n'+str(transform))
-        
-    if Params["GeneratorType"]=="FromFull" and genome!='Random':
+
+
+def GenTraces(TraceGen,genome, transform,Params):        
+    if genome!='Random':
         counts = TraceGen.ObtainTraces(transform,genome)
         
     elif genome == 'Random':
@@ -60,7 +56,7 @@ if __name__ == '__main__':
             "ZNorm": False,
             "Norm":  False,
             "Date" : str(date.today()),
-            "Type" : "Red",
+            "Type" : "Validation",
             "Genomes" : ['NC_000913.3'],
             "FPR": 0.5, #per kb 0.5
             "FPR2": 0.1, #per kb 0.2
@@ -71,27 +67,11 @@ if __name__ == '__main__':
     
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
     savedir = Misc.GetModelSavePath(ROOT_DIR,str(date.today()))
-    
-    json = json.dumps(Params)
-    f = open(os.path.join(savedir ,'Params' + Params['Type'] +'.json'),"w")
-    f.write(json)
-    f.close()
-    
-    f = open(os.path.join(savedir ,'Params' + Params['Type']+'.csv'),"w")
-    w = csv.writer(f)
-    for key, val in Params.items():
-        w.writerow([key, str(val)])        
-    f.close()
-    
-    
-    
-    mypath =os.path.join( "D:\Sergey\FluorocodeMain\FluorocodeMain\Data",Params["Type"])
-    for root, dirs, files in os.walk(mypath):
-        for file in files:
-            os.remove(os.path.join(root, file))
+    DataSaveDir = os.path.join(ROOT_DIR, "Data")
 
-    
-    
+    Misc.WriteDataParams(savedir,Params)
+    Misc.EmptyDataFolder(os.path.join( "D:\Sergey\FluorocodeMain\FluorocodeMain\Data",Params["Type"]))
+
 
     AllCounts =[]
     Dt = DataConverter()
@@ -100,13 +80,11 @@ if __name__ == '__main__':
     
     
     for genome in Params["Genomes"]:
-        
-    
 
         SIMTRC     = SIMTraces.TSIMTraces(genome,Params["StretchingFactor"],0.34,0,'TaqI',Params["PixelSize"],Params['PixelShift'],Params[ "amplitude_variation"] ,Params["FPR"],Params["FPR2"],Params["FragmentSize"])  
         Gauss      = Misc.GetGauss1d(Params["FragmentSize"] , Misc.FWHMtoSigma(Misc.GetFWHM(Params["Wavelength"],Params["NA"],Params["ResEnhancement"])),Params["PixelSize"] )
         [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
-        TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params)
+        TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params,DataSaveDir)
 
         if Params["NumTransformations"]!='FromExisting':
             arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
@@ -119,7 +97,7 @@ if __name__ == '__main__':
             
    
     try:       
-        np.savez(os.path.join(mypath,"NumberOfTraces.npz"),NumberOfTraces=np.sum(np.array(AllCounts)))
+        np.savez(os.path.join( DataSaveDir,Params["Type"],"NumberOfTraces.npz"),NumberOfTraces=np.sum(np.array(AllCounts)))
         print(str(time.time()-t) + " elapsed for generation" )
     except:
         print('Done')

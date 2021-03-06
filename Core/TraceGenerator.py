@@ -15,8 +15,7 @@ from Core import Misc
 
 
 class TraceGenerator():
-    # def __init__(self, Params, SIMTRC, ReCutsInPx,Gauss,NoiseProfiles,DataStorage, DataHandler):
-    def __init__(self, SIMTRC, ReCutsInPx,Gauss,NoiseProfiles,DataStorage, DataHandler,Params):
+    def __init__(self, SIMTRC, ReCutsInPx,Gauss,NoiseProfiles,DataStorage, DataHandler,Params,SaveDir):
         self.SimTraces = SIMTRC
         self.Gauss = Gauss
         self.ReCutsInPx = ReCutsInPx
@@ -31,6 +30,11 @@ class TraceGenerator():
         self.ToAddRef = []
         self.ToAddLabels = []
         self.Positions = []
+        if os.path.exists(SaveDir):
+            self.SaveDir = SaveDir
+        else:
+            os.makedirs(SaveDir)
+            self.SaveDir = SaveDir
         
     def reset(self):
         self.ToAddLabeled = []
@@ -80,7 +84,7 @@ class TraceGenerator():
             self.reset()
             
         # print("Batch done")   
-        counts=self.Ds.BatchStoreData( EffLabeledTraces,ReferenceData,LabeledData,self.Positions,self.Dt,self.Ds, os.path.join("D:\Sergey\FluorocodeMain\FluorocodeMain\Data",self.Type) ,str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
+        counts=self.Ds.BatchStoreData( EffLabeledTraces,ReferenceData,LabeledData,self.Positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type) ,str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
         print('\n' + str(time.time()-t) ,end="")
         return counts
     
@@ -108,8 +112,6 @@ class TraceGenerator():
                 pos = np.random.uniform(0,self.FragmentSize,numDyes)
                 u, c = np.unique(pos.astype(np.int16), return_counts=True)
                 c = c* np.random.gamma(self.amplitude_variation[0],self.amplitude_variation[1],size = c.shape)
-                # c = c* np.random.uniform(self.amplitude_variation[0],self.amplitude_variation[1],size = c.shape)
-                # c = c+c* np.random.uniform(-0.2,0.2,size = c.shape)
 
                 trace[u] = trace[u]+ c
                 
@@ -118,7 +120,7 @@ class TraceGenerator():
 
                 RandomTraces.append( Misc.GetLocalNorm(trc,i,self.Params,self.SimTraces))
                 RandomLabels.append( self.ObtainLabel(genome))
-      counts = self.Ds.BatchStoreData(RandomTraces,[],RandomLabels,positions,self.Dt,self.Ds, os.path.join("D:\Sergey\FluorocodeMain\FluorocodeMain\Data",self.Type),str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
+      counts = self.Ds.BatchStoreData(RandomTraces,[],RandomLabels,positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type),str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
       return counts
       
   

@@ -10,7 +10,8 @@ import Core.SIMTraces
 import numpy as np
 import sys
 import os
-
+import json
+import csv
 from datetime import date
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
@@ -212,7 +213,22 @@ def normalize_local(npoints, trace):
   return out
         
         
+def EmptyDataFolder(mypath):
+    for root, dirs, files in os.walk(mypath):
+        for file in files:
+            os.remove(os.path.join(root, file))
     
+def WriteDataParams(savedir,Params):
+    jsonfile = json.dumps(Params)
+    f = open(os.path.join(savedir ,'Params' + Params['Type'] +'.json'),"w")
+    f.write(jsonfile)
+    f.close()
+    
+    f = open(os.path.join(savedir ,'Params' + Params['Type']+'.csv'),"w")
+    w = csv.writer(f)
+    for key, val in Params.items():
+        w.writerow([key, str(val)])        
+    f.close()
         
     
     

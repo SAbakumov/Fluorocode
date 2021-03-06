@@ -21,6 +21,8 @@ import sys
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 savedir = Misc.GetModelSavePath(ROOT_DIR,str(date.today()))
+DataSaveDir = os.path.join(ROOT_DIR, "Data")
+
 log = {}
 log['Test-Loss'] = []
 log['Test-acc'] = []
@@ -123,8 +125,8 @@ mcp_save_bestLoss = keras.callbacks.ModelCheckpoint(os.path.join(savedir,'modelB
 model.load_weights(r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-03-02\Training_2\modelBestLoss.hdf5' )
 
 dt = DataLoader()
-X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData("D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Training")
-x_v ,y_v   ,   Label_DataV, posV    = dt.BatchLoadTrainingData("D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Validation")
+X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData(os.path.join(    DataSaveDir, "Training"))
+x_v ,y_v   ,   Label_DataV, posV    = dt.BatchLoadTrainingData(os.path.join(    DataSaveDir, "Validation"))
 
 
 
