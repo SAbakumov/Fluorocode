@@ -6,7 +6,6 @@ Created on Sun Sep 27 19:55:53 2020
 """
 
 from Bio import Restriction
-from Core.Noise import perlin
 import Core.SIMTraces
 import numpy as np
 import sys
@@ -48,12 +47,12 @@ def GetGauss1d(size,sigma,pixelsz):
     Gauss = Gauss[0:len(Gauss)-1]
     return Gauss
 
-def GetPerlinNoise(size):
-    noise=perlin.Perlin(50)
+# def GetPerlinNoise(size):
+#     noise=perlin.Perlin(50)
 
-    time=[i for i in range(size)]
-    values=np.array([noise.valueAt(i) for i in time])
-    return values
+#     time=[i for i in range(size)]
+#     values=np.array([noise.valueAt(i) for i in time])
+#     return values
 
 
 def GetGauss(sigma,pixelsz):

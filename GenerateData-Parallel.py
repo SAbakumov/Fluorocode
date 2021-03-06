@@ -108,14 +108,14 @@ if __name__ == '__main__':
         [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
         TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params)
 
-        if Params["NumTransformations"]!='FromExisting':
-            arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
-            pool = multiprocessing.Pool(processes=24)
-            totcounts = pool.starmap(GenTraces, arg)
-            pool.close()
-            pool.join()   
-            AllCounts= AllCounts+totcounts
-            print('done')
+        # if Params["NumTransformations"]!='FromExisting':
+        #     arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
+        #     pool = multiprocessing.Pool(processes=24)
+        #     totcounts = pool.starmap(GenTraces, arg)
+        #     pool.close()
+        #     pool.join()   
+        #     AllCounts= AllCounts+totcounts
+        #     print('done')
             
    
     try:       
