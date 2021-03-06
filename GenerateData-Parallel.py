@@ -49,7 +49,7 @@ if __name__ == '__main__':
             "FromLags" : True,
             "NumTransformations"  :[1],
             "StretchingFactor" :[1.72],
-            "LowerBoundEffLabelingRate" : 0.80,
+            "LowerBoundEffLabelingRate" : 0.70,
             "UpperBoundEffLabelingRate" : 0.95,
             "amplitude_variation":[8.55696606597531,	3.23996722003733],
             "step" :200,
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             "Date" : str(date.today()),
             "Type" : "Red",
             "Genomes" : ['NC_000913.3'],
-            "FPR": 0.4, #per kb 0.5
+            "FPR": 0.5, #per kb 0.5
             "FPR2": 0.1, #per kb 0.2
             # "Genomes" : ['NC_000913.3','NZ_LR735434.1','NZ_LR135297.1','NC_005139.1',4444446'NC_006177.1','NC_009663.1','NZ_CP021851.1'],
             "Random-min": 52,
@@ -108,14 +108,14 @@ if __name__ == '__main__':
         [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
         TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params)
 
-        # if Params["NumTransformations"]!='FromExisting':
-        #     arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
-        #     pool = multiprocessing.Pool(processes=24)
-        #     totcounts = pool.starmap(GenTraces, arg)
-        #     pool.close()
-        #     pool.join()   
-        #     AllCounts= AllCounts+totcounts
-        #     print('done')
+        if Params["NumTransformations"]!='FromExisting':
+            arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
+            pool = multiprocessing.Pool(processes=24)
+            totcounts = pool.starmap(GenTraces, arg)
+            pool.close()
+            pool.join()   
+            AllCounts= AllCounts+totcounts
+            print('done')
             
    
     try:       
