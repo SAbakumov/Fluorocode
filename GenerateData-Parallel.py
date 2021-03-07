@@ -37,18 +37,18 @@ def CallTraceGeneration(Params):
     Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
       
     if __name__ == '__main__':
-       
+    
         t = time.time()
 
         
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
         savedir = Misc.GetModelSavePath(ROOT_DIR,str(date.today()))
         DataSaveDir = os.path.join(ROOT_DIR, "Data")
-    
+
         Misc.WriteDataParams(savedir,Params)
         Misc.EmptyDataFolder(os.path.join( DataSaveDir,Params["Type"]))
-    
-    
+
+
         AllCounts =[]
         Dt = DataConverter()
         Ds = DataLoader()
@@ -56,7 +56,7 @@ def CallTraceGeneration(Params):
         
         
         for genome in Params["Genomes"]:
-    
+
             SIMTRC     = SIMTraces.TSIMTraces(genome,Params["StretchingFactor"],0.34,0,Params["Enzyme"],Params["PixelSize"],Params['PixelShift'],Params[ "amplitude_variation"] ,Params["FPR"],Params["FPR2"],Params["FragmentSize"])  
             Gauss      = Misc.GetGauss1d(Params["FragmentSize"] , Misc.FWHMtoSigma(Misc.GetFWHM(Params["Wavelength"],Params["NA"],Params["ResEnhancement"])),Params["PixelSize"] )
             [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
@@ -71,10 +71,10 @@ def CallTraceGeneration(Params):
             AllCounts= AllCounts+totcounts
             print('done')
             
-       
+        
             np.savez(os.path.join( DataSaveDir,Params["Type"],"NumberOfTraces.npz"),NumberOfTraces=np.sum(np.array(AllCounts)))
             print(str(time.time()-t) + " elapsed for generation" )
-    
+
         
     
 ########### USER INPUT ############
@@ -85,7 +85,7 @@ Params = {"Wavelength" : 576,
                "FragmentSize" :300,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
-               "FromLags" : True,
+               "FromLags" : False,
                "Enzyme" : 'TaqI',
                "NumTransformations"  :[10,10],
                "StretchingFactor" :[1.72],
@@ -101,20 +101,20 @@ Params = {"Wavelength" : 576,
                "Norm":  False,
                "Date" : str(date.today()),
                "Type" : "Validation",
-               "Genomes" : ['NC_000913.3'],
+               "Genomes" : ['NC_000913.3','Random'],
                "FPR": 0.5, #per kb 0.5
                "FPR2": 0.1, #per kb 0.2
                "Random-min": 52,
                "Random-max": 210}    
 
 
-DataTypes = ["Green","Red"]
-Enzymes   = ["TaqI","PabI"]
-NumTransforms = [[1],[1]]
+DataTypes = ["Training","Validation"]
+# Enzymes   = ["TaqI","PabI"]
+NumTransforms = [[400,400],[10,10]]
 
 
 for i in range(0,2):
-    Params["Enzyme"] = Enzymes[i]
+    # Params["Enzyme"] = Enzymes[i]
     Params["Type"]   = DataTypes[i]
     Params["NumTransformations"] = NumTransforms[i]
     CallTraceGeneration(Params)

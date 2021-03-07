@@ -4,7 +4,7 @@ Created on Sun Sep 27 19:55:53 2020
 
 @author: Sergey
 """
-
+import Bio
 from Bio import Restriction
 import Core.SIMTraces
 import numpy as np

@@ -110,7 +110,7 @@ class ValDataEval(tf.keras.callbacks.Callback):
 
 
 # model = LSTMAutoEncoder1D();
-model = CNN1D(1);
+model = CNN1D(1)
 
 opt = keras.optimizers.Adam(learning_rate=0.0001)
 

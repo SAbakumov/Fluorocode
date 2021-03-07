@@ -126,9 +126,10 @@ class TraceGenerator():
       return counts
       
     def SaveMap(self,Map):
-      with open(os.path.join(self.SaveDir,self.Type,self.Type+'csv'), 'w') as f: 
+      with open(os.path.join(self.SaveDir,self.Type,self.Type+'.csv'), 'w') as f: 
            write = csv.writer(f) 
-        #    write.writerows(np.array(Map)) 
+           Map = [str(x) for x in Map]
+           write.writerow(Map)
 
       
       
