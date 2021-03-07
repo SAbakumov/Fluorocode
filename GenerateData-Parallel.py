@@ -56,7 +56,7 @@ if __name__ == '__main__':
             "ZNorm": False,
             "Norm":  False,
             "Date" : str(date.today()),
-            "Type" : "Validation",
+            "Type" : "Training",
             "Genomes" : ['NC_000913.3'],
             "FPR": 0.5, #per kb 0.5
             "FPR2": 0.1, #per kb 0.2
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     DataSaveDir = os.path.join(ROOT_DIR, "Data")
 
     Misc.WriteDataParams(savedir,Params)
-    Misc.EmptyDataFolder(os.path.join( "D:\Sergey\FluorocodeMain\FluorocodeMain\Data",Params["Type"]))
+    Misc.EmptyDataFolder(os.path.join( DataSaveDir,Params["Type"]))
 
 
     AllCounts =[]
@@ -96,13 +96,9 @@ if __name__ == '__main__':
             print('done')
             
    
-    try:       
         np.savez(os.path.join( DataSaveDir,Params["Type"],"NumberOfTraces.npz"),NumberOfTraces=np.sum(np.array(AllCounts)))
         print(str(time.time()-t) + " elapsed for generation" )
-    except:
-        print('Done')
-    
-  
+
     
     
         
