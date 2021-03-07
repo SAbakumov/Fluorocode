@@ -14,7 +14,7 @@ import json
 import csv
 from datetime import date
 from scipy import sparse
-from scipy.sparse.linalg import spsolve
+#from scipy.sparse.linalg import spsolve
 
 
 def baseline_als(y, lam, p, niter=10):
@@ -24,7 +24,7 @@ def baseline_als(y, lam, p, niter=10):
   for i in range(niter):
     W = sparse.spdiags(w, 0, L, L)
     Z = W + lam * D.dot(D.transpose())
-    z = spsolve(Z, w*y)
+    z = scipy.sparse.linalg.spsolve(Z, w*y)
     w = p * (y > z) + (1-p) * (y < z)
   return z
 

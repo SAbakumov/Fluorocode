@@ -8,14 +8,13 @@ Created on Mon Dec 14 22:04:34 2020
 
 import numpy as np
 import time
-import Core.RandomTraceGenerator as R
 import os
-import Core.SIMTraces as SIMTraces
+import csv
 from Core import Misc
 
 
 class TraceGenerator():
-    def __init__(self, SIMTRC, ReCutsInPx,Gauss,NoiseProfiles,DataStorage, DataHandler,Params,SaveDir):
+    def __init__(self, SIMTRC, ReCutsInPx, Gauss, NoiseProfiles, DataStorage, DataHandler, Params, SaveDir):
         self.SimTraces = SIMTRC
         self.Gauss = Gauss
         self.ReCutsInPx = ReCutsInPx
@@ -35,7 +34,9 @@ class TraceGenerator():
         else:
             os.makedirs(SaveDir)
             self.SaveDir = SaveDir
-        
+        if not os.path.exists(os.path.join(self.SaveDir, self.Type)):
+            os.makedirs(os.path.join(self.SaveDir, self.Type))   
+            
     def reset(self):
         self.ToAddLabeled = []
         self.ToAddRef = []
@@ -82,9 +83,8 @@ class TraceGenerator():
             ReferenceData  = ReferenceData + self.ToAddRef
             LabeledData    = LabeledData   + self.ToAddLabels
             self.reset()
-            
-        # print("Batch done")   
-        counts=self.Ds.BatchStoreData( EffLabeledTraces,ReferenceData,LabeledData,self.Positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type) ,str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
+             
+        counts=self.Ds.BatchStoreData( EffLabeledTraces ,ReferenceData,LabeledData,self.Positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type) ,str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
         print('\n' + str(time.time()-t) ,end="")
         return counts
     
@@ -120,10 +120,15 @@ class TraceGenerator():
 
                 RandomTraces.append( Misc.GetLocalNorm(trc,i,self.Params,self.SimTraces))
                 RandomLabels.append( self.ObtainLabel(genome))
+
+      
       counts = self.Ds.BatchStoreData(RandomTraces,[],RandomLabels,positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type),str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
       return counts
       
-  
+    def SaveMap(self,Map):
+      with open(os.path.join(self.SaveDir,self.Type,self.Type+'csv'), 'w') as f: 
+           write = csv.writer(f) 
+        #    write.writerows(np.array(Map)) 
 
       
       

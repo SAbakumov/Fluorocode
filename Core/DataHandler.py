@@ -15,7 +15,6 @@ import Core.Misc as msc
 # import tensorflow as tf
 import scipy
 import scipy.io
-import sklearn.utils
 import random
 import sys
 import csv

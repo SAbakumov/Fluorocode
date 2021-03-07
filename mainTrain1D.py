@@ -122,7 +122,7 @@ mcp_save_bestLoss = keras.callbacks.ModelCheckpoint(os.path.join(savedir,'modelB
 
 
 # model.load_weights(r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-02-21\Training_3\modelBestLoss.hdf5' )
-model.load_weights(r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-03-02\Training_2\modelBestLoss.hdf5' )
+# model.load_weights(r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-03-02\Training_2\modelBestLoss.hdf5' )
 
 dt = DataLoader()
 X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData(os.path.join(    DataSaveDir, "Training"))
