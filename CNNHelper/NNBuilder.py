@@ -6,7 +6,7 @@ Created on Mon Sep 28 09:58:06 2020
 """
 
 import tensorflow as tf
-import matplotlib as plt
+# import matplotlib as plt
 from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np

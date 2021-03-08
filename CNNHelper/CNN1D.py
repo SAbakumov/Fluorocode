@@ -6,7 +6,7 @@ Created on Tue Oct 20 20:30:11 2020
 """
 
 import tensorflow as tf
-import matplotlib as plt
+# import matplotlib as plt
 from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
@@ -52,13 +52,13 @@ def CNN1D(classes):
     x = layers.MaxPooling1D(pool_size=2)(x)
 
 
-    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
     x = layers.MaxPooling1D(pool_size=2)(x)
     x = layers.GlobalMaxPooling1D()(x)

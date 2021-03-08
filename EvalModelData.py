@@ -132,7 +132,7 @@ for stretch in stretchFactors:
     x_vFP2 = []
     x_vTP1 = []
     x_vTP2 = []
-    for i in range(0,1547):
+    for i in range(0,467):
         
             x_VFP.append(Misc.GetLocalNormFromPars( x_vFp[i].astype(np.float32),stretch,0.34,64.5,10000)   )
             x_vRealFlipped.append(Misc.GetLocalNormFromPars( np.flip(x_vFp[i].astype(np.float32)),stretch,0.34,64.5,10000)   )
@@ -169,7 +169,7 @@ for stretch in stretchFactors:
 
 
 
-pth = r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-02-21\Training_3'
+pth = r'D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\StoredModels\2021-03-08\Training_1'
 
 
 json_file = open(os.path.join(pth ,'model-Architecture.json'), 'r')

@@ -85,7 +85,7 @@ Params = {"Wavelength" : 576,
                "FragmentSize" :300,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
-               "FromLags" : False,
+               "FromLags" :True,
                "Enzyme" : 'TaqI',
                "NumTransformations"  :[10,10],
                "StretchingFactor" :[1.72],
@@ -96,25 +96,25 @@ Params = {"Wavelength" : 576,
                "PixelShift": 0.5,
                "NoiseAmp": [5],
                "GenerateFullReference" :True,
-               "LocalNormWindow":10000,
+               "LocalNormWindow":0,
                "ZNorm": False,
                "Norm":  False,
                "Date" : str(date.today()),
                "Type" : "Validation",
-               "Genomes" : ['NC_000913.3','Random'],
+               "Genomes" : ['NC_000913.3'],
                "FPR": 0.5, #per kb 0.5
                "FPR2": 0.1, #per kb 0.2
                "Random-min": 52,
                "Random-max": 210}    
 
 
-DataTypes = ["Training","Validation"]
-# Enzymes   = ["TaqI","PabI"]
-NumTransforms = [[400,400],[10,10]]
+DataTypes = ["Green","Red"]
+Enzymes   = ["TaqI","PabI"]
+NumTransforms = [[1],[1]]
 
 
 for i in range(0,2):
-    # Params["Enzyme"] = Enzymes[i]
+    Params["Enzyme"] = Enzymes[i]
     Params["Type"]   = DataTypes[i]
     Params["NumTransformations"] = NumTransforms[i]
     CallTraceGeneration(Params)
