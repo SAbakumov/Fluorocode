@@ -1,7 +1,5 @@
 
 # -*- coding: utf-8 -*-
-
-
 """
 Created on Sun Sep 27 19:59:10 2020
 
@@ -33,8 +31,8 @@ def GenTraces(TraceGen, genome, transform, Params):
 
 def CallTraceGeneration(Params):
 
-    np.random.seed(seed=44864)
-    Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
+    # np.random.seed(seed=44864)
+    # Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
       
     if __name__ == '__main__':
     
@@ -45,8 +43,8 @@ def CallTraceGeneration(Params):
         savedir = Misc.GetModelSavePath(ROOT_DIR,str(date.today()))
         DataSaveDir = os.path.join(ROOT_DIR, "Data")
 
-        Misc.WriteDataParams(savedir,Params)
         Misc.EmptyDataFolder(os.path.join( DataSaveDir,Params["Type"]))
+        Misc.WriteDataParams( os.path.join( DataSaveDir,Params["Type"]),Params)
 
 
         AllCounts =[]
@@ -86,6 +84,7 @@ Params = {"Wavelength" : 576,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
                "FromLags" :False,
+               "Lags":[],
                "Enzyme" : 'TaqI',
                "NumTransformations"  :[10,10],
                "StretchingFactor" :[1.72],
@@ -96,13 +95,13 @@ Params = {"Wavelength" : 576,
                "PixelShift": 0.2,
                "NoiseAmp": [5],
                "GenerateFullReference" :True,
-               "LocalNormWindow":15000,
+               "LocalNormWindow":10000,
                "ZNorm": False,
                "Norm":  False,
                "Date" : str(date.today()),
                "Type" : "Training",
                "Genomes" : ['NC_000913.3'],
-               "FPR": 0.5, #per kb 0.5
+               "FPR": 0.4, #per kb 0.5
                "FPR2": 0.1, #per kb 0.2
                "Random-min": 52,
                "Random-max": 210}    

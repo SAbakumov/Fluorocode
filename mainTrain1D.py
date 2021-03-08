@@ -17,6 +17,8 @@ from Core.DataHandler import DataLoader
 # import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import zipfile
+
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -122,11 +124,19 @@ mcp_save_bestLoss = keras.callbacks.ModelCheckpoint(os.path.join(savedir,'modelB
 
 
 # model.load_weights(r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-02-21\Training_3\modelBestLoss.hdf5' )
-model.load_weights(r'D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\StoredModels\2021-03-08\Training_1\modelBestLoss.hdf5' )
+# model.load_weights(r'D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\StoredModels\2021-03-08\Training_1\modelBestLoss.hdf5' )
 
 dt = DataLoader()
-X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData(os.path.join(    DataSaveDir, "Training"))
-x_v ,y_v   ,   Label_DataV, posV    = dt.BatchLoadTrainingData(os.path.join(    DataSaveDir, "Validation"))
+pathTraining = os.path.join(    DataSaveDir, "Training")
+pathValidation = os.path.join(    DataSaveDir, "Validation")
+zip_file = zipfile.ZipFile(os.path.join(savedir,'TrainingParams.zip'), "w")
+zip_file.write(os.path.join(pathTraining,'ParamsTraining.csv'),arcname = 'ParamsTraining.csv')
+zip_file.write(os.path.join(pathValidation,'ParamsTraining.csv'),arcname = 'ParamsValidation.csv')
+zip_file.close()
+
+
+X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData(os.path.join(   pathTraining))
+x_v ,y_v   ,   Label_DataV, posV    = dt.BatchLoadTrainingData(os.path.join(   pathValidation))
 
 
 

@@ -130,9 +130,7 @@ class TraceGenerator():
            write = csv.writer(f) 
            Map = [str(x) for x in Map]
            write.writerow(Map)
-
-      
-      
+  
                             
                 
     
