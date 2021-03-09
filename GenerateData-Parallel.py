@@ -80,14 +80,14 @@ def CallTraceGeneration(Params):
 
 Params = {"Wavelength" : 576,
                "NA" : 1.4,
-               "FragmentSize" :300,
+               "FragmentSize" :40,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
-               "FromLags" :True,
+               "FromLags" :False,
                "ShuffleData":False,
                "Lags":[],
                "Enzyme" : 'TaqI',
-               "NumTransformations"  :[10,10],
+               "NumTransformations"  :[1],
                "StretchingFactor" :[1.72],
                "LowerBoundEffLabelingRate" : 0.70,
                "UpperBoundEffLabelingRate" : 0.95,
@@ -100,23 +100,21 @@ Params = {"Wavelength" : 576,
                "ZNorm": False,
                "Norm":  False,
                "Date" : str(date.today()),
-               "Type" : "Training",
-               "Genomes" : ['NC_000913.3'],
+               "Type" : "MLV_taq",
+               "Genomes" : ['NC_001802'],# NC_001501.1 MLV NC_001802 HIV KU892415 SIV
                "FPR": 0.4, #per kb 0.5
                "FPR2": 0.1, #per kb 0.2
                "Random-min": 52,
                "Random-max": 210}    
 
 
-DataTypes = ["Green","Red"]
+DataTypes = ["MLV_TaqI","MLV_Pabi"]
 Enzymes   = ["TaqI","PabI"]
-NumTransforms = [[1],[1]]
 
 
 for i in range(0,2):
-    Params["Enzyme"] = Enzymes[i]
     Params["Type"]   = DataTypes[i]
-    Params["NumTransformations"] = NumTransforms[i]
+    Params["Enzyme"] = Enzymes[i]
     CallTraceGeneration(Params)
 
    
