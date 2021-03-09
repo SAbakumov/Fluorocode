@@ -131,7 +131,7 @@ pathTraining = os.path.join(    DataSaveDir, "Training")
 pathValidation = os.path.join(    DataSaveDir, "Validation")
 zip_file = zipfile.ZipFile(os.path.join(savedir,'TrainingParams.zip'), "w")
 zip_file.write(os.path.join(pathTraining,'ParamsTraining.csv'),arcname = 'ParamsTraining.csv')
-zip_file.write(os.path.join(pathValidation,'ParamsTraining.csv'),arcname = 'ParamsValidation.csv')
+zip_file.write(os.path.join(pathValidation,'ParamsValidation.csv'),arcname = 'ParamsValidation.csv')
 zip_file.close()
 
 

@@ -23,7 +23,8 @@ class DataLoader():
     def __init__(self):
         self.TrainingImages = []
         self.LabelImages = []
-    
+        self.ShuffleData = True
+        
     def PrepareTrainingData(self,folder):
         print('Loading Training images from folder ' + folder)
         TrainingImages = []
@@ -210,7 +211,8 @@ class DataLoader():
                         Train ,Labels, Ref,pos = self.LoadTrainingData(os.path.join(path,files[i]))
                         # stadDev = np.std(Train)
                         assignmentarr  =  (np.linspace(0,counts,counts)).astype(np.int64)
-                        np.random.shuffle(  assignmentarr)
+                        if self.ShuffleData:
+                            np.random.shuffle(  assignmentarr)
                         PreTrain = np.zeros([counts+maxind-1,Train.shape[1],1],dtype=np.int16)
                         PreRefs = np.zeros([counts+maxind-1,Train.shape[1],1],dtype=np.int16)
                         PrePos  = np.zeros([counts+maxind-1])
@@ -322,7 +324,9 @@ class DataLoader():
         
        
 class DataConverter():
-    
+    def __init__(self):
+        self.ShuffleData = True
+
     # def ToTensor(self,array):
     #     for item in  array:
     #         item  = tf.convert_to_tensor(item)
@@ -373,8 +377,9 @@ class DataConverter():
             AllTraces = []
             for Genome in tracearray:
                 AllTraces.extend(Genome)
+            if  self.ShuffleData:
+                random.Random(452856).shuffle(AllTraces)
                 
-            random.Random(452856).shuffle(AllTraces)
             for i in range(0,len(AllTraces)):
                 if datatype=='data':
                     DataTensor[i,:,:] = np.reshape(AllTraces[i],[len(AllTraces[i]),1])

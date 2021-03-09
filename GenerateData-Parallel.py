@@ -31,8 +31,8 @@ def GenTraces(TraceGen, genome, transform, Params):
 
 def CallTraceGeneration(Params):
 
-    # np.random.seed(seed=44864)
-    # Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
+    np.random.seed(seed=44864)
+    Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
       
     if __name__ == '__main__':
     
@@ -50,9 +50,9 @@ def CallTraceGeneration(Params):
         AllCounts =[]
         Dt = DataConverter()
         Ds = DataLoader()
-        
-        
-        
+        Dt.ShuffleData =Params["ShuffleData"]
+        Ds.ShuffleData =Params["ShuffleData"]
+   
         for genome in Params["Genomes"]:
 
             SIMTRC     = SIMTraces.TSIMTraces(genome,Params["StretchingFactor"],0.34,0,Params["Enzyme"],Params["PixelSize"],Params['PixelShift'],Params[ "amplitude_variation"] ,Params["FPR"],Params["FPR2"],Params["FragmentSize"])  
@@ -83,7 +83,8 @@ Params = {"Wavelength" : 576,
                "FragmentSize" :300,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
-               "FromLags" :False,
+               "FromLags" :True,
+               "ShuffleData":False,
                "Lags":[],
                "Enzyme" : 'TaqI',
                "NumTransformations"  :[10,10],
@@ -95,7 +96,7 @@ Params = {"Wavelength" : 576,
                "PixelShift": 0.2,
                "NoiseAmp": [5],
                "GenerateFullReference" :True,
-               "LocalNormWindow":10000,
+               "LocalNormWindow":0,
                "ZNorm": False,
                "Norm":  False,
                "Date" : str(date.today()),
@@ -107,13 +108,13 @@ Params = {"Wavelength" : 576,
                "Random-max": 210}    
 
 
-DataTypes = ["Training","Validation"]
-# Enzymes   = ["TaqI","PabI"]
-NumTransforms = [[400,400],[10,10]]
+DataTypes = ["Green","Red"]
+Enzymes   = ["TaqI","PabI"]
+NumTransforms = [[1],[1]]
 
 
 for i in range(0,2):
-    # Params["Enzyme"] = Enzymes[i]
+    Params["Enzyme"] = Enzymes[i]
     Params["Type"]   = DataTypes[i]
     Params["NumTransformations"] = NumTransforms[i]
     CallTraceGeneration(Params)

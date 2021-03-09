@@ -12,8 +12,9 @@ import csv
 import os
 
 dt = DataLoader()
+dt.ShuffleData = False
 mypath = r"D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\Data\Green\traces-Green.csv"
-X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData("D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\Data\Green")
+X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData(r"D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\Data\Green")
 X_Data = np.squeeze(X_Data)
 with open(os.path.join(mypath), 'w',newline='' ) as f: 
   
