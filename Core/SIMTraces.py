@@ -171,7 +171,7 @@ class TSIMTraces:
 
         return trc
       def YieldWrongRegions(self,trc):
-          numregs = np.random.randint(0,3)
+          numregs = np.random.randint(2,4)
           for i in range(numregs):
               startind = self.region[0]+ np.random.randint(0,self.frag_size)
               endind = startind + np.random.randint(25,35)

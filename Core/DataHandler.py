@@ -24,7 +24,8 @@ class DataLoader():
         self.TrainingImages = []
         self.LabelImages = []
         self.ShuffleData = True
-        
+    def set_savingformat(self, saveformat):
+        self.AsCSV = saveformat    
     def PrepareTrainingData(self,folder):
         print('Loading Training images from folder ' + folder)
         TrainingImages = []
@@ -263,7 +264,22 @@ class DataLoader():
     def SaveTrainingData(self,training_data,training_refs, training_labels,positions, path):
         np.savez_compressed(path,training_data=training_data,training_refs=training_refs,training_labels= training_labels,pos = positions)
        
-        
+    def SaveTrainingDataAsCSV(self,path, Profiles,Refs,Positions):
+        with open(path + "GeneratedTraces.csv", "w", newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for line in Profiles:
+                prof = (line.flatten()).tolist()
+                writer.writerow(prof)
+        with open(path  + "ReferenceTraces.csv", "w", newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for line in Refs:
+                prof = (line.flatten()).tolist()
+                writer.writerow(prof)
+        with open(path  + "Positions.csv", "w", newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for line in Positions:
+                writer.writerow([line])
+     
      
     def BatchStoreData(self,EffLabeledTraces,ReferenceData,LabelData,Positions, Dt,Ds,path,batchnum,Params):
         AllLabels = []
@@ -302,6 +318,8 @@ class DataLoader():
         
         # np.savez(os.path.join(path,"NumberOfTraces.npz"),NumberOfTraces=counts)
         # print('\r'+"Saving...")
+        if Ds.AsCSV:
+            Ds.SaveTrainingDataAsCSV(path+ "\DataFor" +Params["Type"]+ batchnum, Profiles,Refs,Positions)
         Ds.SaveTrainingData(Profiles,Refs,Labels,Positions ,path=path+ "\DataFor" +Params["Type"]+ batchnum + ".npz")      
         return counts
         

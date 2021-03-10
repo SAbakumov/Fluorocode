@@ -53,19 +53,19 @@ class TraceGenerator():
         EffLabeledTraces =[]
         ReferenceData   = []
         LabeledData     = []
+        self.Ds.set_savingformat(self.SaveFormatAsCSV)
 
         for i in range(0,len(self.StretchingFactor)):
             self.SimTraces.set_stretch(self.StretchingFactor[i])
             self.SimTraces.set_recuts(self.ReCutsInPx[i],self.Gauss)
             self.SimTraces.set_labellingrate(self.LowerBoundEffLabelingRate, self.UpperBoundEffLabelingRate)
             self.SimTraces.set_lags(self.FromLags,self.Lags,self.step)
-
             
             for offset in self.SimTraces.Lags:
                 self.SimTraces.set_region(offset,self.FragmentSize,self.step)
                 self.SimTraces.get_EffLabelledProfile()
                 self.SimTraces.get_FPR()
-                # self.SimTraces.get_WrongRegions()
+                self.SimTraces.get_WrongRegions()
                 trc = self.SimTraces.get_FluorocodeProfile(self.Gauss)[0]
                 
              
@@ -125,8 +125,8 @@ class TraceGenerator():
       counts = self.Ds.BatchStoreData(RandomTraces,[],RandomLabels,positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type),str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
       return counts
       
-    def SaveMap(self,Map):
-      with open(os.path.join(self.SaveDir,self.Type,self.Type+'.csv'), 'w') as f: 
+    def SaveMap(self,Map,genome):
+      with open(os.path.join(self.SaveDir,self.Type,'GEN-'+genome+'.csv'), 'w') as f: 
            write = csv.writer(f) 
            Map = [str(x) for x in Map]
            write.writerow(Map)
