@@ -8,13 +8,11 @@ Created on Tue Oct 20 20:55:37 2020
 import os
 import tensorflow as tf
 from CNNHelper.CNN1D import CNN1D 
-# from CNNHelper.LSTMAutoEncoder import LSTMAutoEncoder1D
 import Core.Misc as Misc
 import json 
 from datetime import date
 from tensorflow import keras
 from Core.DataHandler import DataLoader
-# import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import zipfile
@@ -38,11 +36,12 @@ f.close()
     
 
 
-
-
 gpus = tf.config.experimental.list_physical_devices('GPU')
-
-
+if gpus:
+  try:
+    tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2028)])
+  except RuntimeError as e:
+    print(e)
 
 
 

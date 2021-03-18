@@ -12,6 +12,11 @@ import time
 import os
 import CopyDataToFolders
 
+import shutil
+import json
+import random
+import csv
+
 from Core.DataHandler import DataConverter
 from Core.DataHandler import DataLoader
 from datetime import date
@@ -19,6 +24,15 @@ import multiprocessing
 import Core.TraceGenerator as TraceGenerator
 
 
+
+def ConcatToCsv(path,dttype,dt):
+    X_Data ,Y_Data,Label_Data, pos = dt.BatchLoadTrainingData(os.path.join( path))
+    with open(os.path.join(path, dttype+'-Data.csv'), 'w',newline='') as f:
+        write = csv.writer(f) 
+        for row in X_Data:
+            data = row.flatten()
+            if not np.all(data==0):
+                write.writerow(row.flatten()) 
 
 def GenTraces(TraceGen, genome, transform, Params):        
     if genome!='Random':
@@ -33,7 +47,7 @@ def GenTraces(TraceGen, genome, transform, Params):
 def CallTraceGeneration(Params):
 
     np.random.seed(seed=44864)
-    Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
+    # Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
       
     if __name__ == '__main__':
     
@@ -63,7 +77,9 @@ def CallTraceGeneration(Params):
             [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
             TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params,DataSaveDir)
             TraceGen.SaveMap(Map,genome)
+         
 
+            
             arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
             pool = multiprocessing.Pool(processes=24)
             totcounts = pool.starmap(GenTraces, arg)
@@ -76,14 +92,17 @@ def CallTraceGeneration(Params):
             np.savez(os.path.join( DataSaveDir,Params["Type"],"NumberOfTraces.npz"),NumberOfTraces=np.sum(np.array(AllCounts)))
             print(str(time.time()-t) + " elapsed for generation" )
 
+        if Params["ConcatToCsv"]:
+            ConcatToCsv(os.path.join( DataSaveDir,Params["Type"]),Params["Type"],Ds)
         
+           
     
 ########### USER INPUT ############
     
 
 Params = {"Wavelength" : 576,
                "NA" : 1.4,
-               "FragmentSize" :356,
+               "FragmentSize" :256,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
                "FromLags" :True,
@@ -93,10 +112,10 @@ Params = {"Wavelength" : 576,
                "NumTransformations"  :[1],
                "StretchingFactor" :[1.72],
                "LowerBoundEffLabelingRate" : 0.7,
-               "UpperBoundEffLabelingRate" : 0.85,
+               "UpperBoundEffLabelingRate" : 0.9,
                "amplitude_variation":[8.55696606597531,	3.23996722003733],
                "step" :2,
-               "PixelShift": 0.5,
+               "PixelShift": 0.1,
                "NoiseAmp": [5],
                "GenerateFullReference" :True,
                "LocalNormWindow":0,
@@ -106,23 +125,27 @@ Params = {"Wavelength" : 576,
                "Type" : "Training",
                "Genomes" : ['NC_000913.3'],
                "FPR": 0.5, #per kb 0.5
-               "FPR2": 0.2, #per kb 0.2
+               "FPR2": 0.1, #per kb 0.2
                "Random-min": 52,
                "Random-max": 210,
-               "SaveFormatAsCSV": True}    
+               "SaveFormatAsCSV": False,
+               "ConcatToCsv": False}    
 
 
-DataTypes = ["NA1-4","NA1-2","NA0-95"]
-NAs = [1.4,1.2,0.95]
-Enzymes   = ["TaqI"]
-NumTransforms = [[1]]
-
-
+DataTypes = ["Green","Red"]
+Enzymes   = ["TaqI","PabI"]
+NumTransforms = [[1],[1]]
+fobj = open("D:\Sergey\FluorocodeMain\BactDatabase.json") # a list of genomes
+genomes = json.load(fobj)
+genomes = [x for x in genomes if x != '']
+genomes = random.sample(genomes, k=25)
+genomes.append('NC_000913.3')
+Params["Genomes"]  = genomes
 for i in range(0,len(DataTypes)):
-    # Params["Enzyme"] = Enzymes[i]
-    Params["Type"]   = DataTypes[i]
-    Params["NA"] = NAs[i]
-    # Params["NumTransformations"] = NumTransforms[i]
+    Params["Enzyme"] = Enzymes[i]
+    Params["Type"]   =DataTypes[i]
+    
+    Params["NumTransformations"] = NumTransforms[i]
     CallTraceGeneration(Params)
    
 ###############################
