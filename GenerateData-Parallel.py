@@ -73,12 +73,8 @@ def CallTraceGeneration(Params):
             Gauss      = Misc.GetGauss1d(Params["FragmentSize"] , Misc.FWHMtoSigma(Misc.GetFWHM(Params["Wavelength"],Params["NA"],Params["ResEnhancement"])),Params["PixelSize"] )
             [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
             TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params,DataSaveDir)
-<<<<<<< HEAD
-            TraceGen.SaveMap(Map)
-=======
             TraceGen.SaveMap(Map,genome)
          
->>>>>>> 4a5300448db7e9e7435a5af9deff8b72af6f7a67
 
             
             arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
@@ -103,11 +99,7 @@ def CallTraceGeneration(Params):
 
 Params = {"Wavelength" : 576,
                "NA" : 1.4,
-<<<<<<< HEAD
                "FragmentSize" :40,
-=======
-               "FragmentSize" :256,
->>>>>>> 4a5300448db7e9e7435a5af9deff8b72af6f7a67
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
                "FromLags" :False,
@@ -116,26 +108,17 @@ Params = {"Wavelength" : 576,
                "Enzyme" : 'TaqI',
                "NumTransformations"  :[1],
                "StretchingFactor" :[1.72],
-<<<<<<< HEAD
                "LowerBoundEffLabelingRate" : 0.70,
                "UpperBoundEffLabelingRate" : 0.95,
                "amplitude_variation":[8.55696606597531,	3.23996722003733],
                "step" :2,
                "PixelShift": 0.2,
-=======
-               "LowerBoundEffLabelingRate" : 0.7,
-               "UpperBoundEffLabelingRate" : 0.9,
-               "amplitude_variation":[8.55696606597531,	3.23996722003733],
-               "step" :2,
-               "PixelShift": 0.1,
->>>>>>> 4a5300448db7e9e7435a5af9deff8b72af6f7a67
                "NoiseAmp": [5],
                "GenerateFullReference" :True,
                "LocalNormWindow":0,
                "ZNorm": False,
                "Norm":  False,
                "Date" : str(date.today()),
-<<<<<<< HEAD
                "Type" : "MLV_taq",
                "Genomes" : ['NC_001802'],# NC_001501.1 MLV NC_001802 HIV KU892415 SIV
                "FPR": 0.4, #per kb 0.5
@@ -151,32 +134,6 @@ Enzymes   = ["TaqI","PabI"]
 for i in range(0,2):
     Params["Type"]   = DataTypes[i]
     Params["Enzyme"] = Enzymes[i]
-=======
-               "Type" : "Training",
-               "Genomes" : ['NC_000913.3'],
-               "FPR": 0.5, #per kb 0.5
-               "FPR2": 0.1, #per kb 0.2
-               "Random-min": 52,
-               "Random-max": 210,
-               "SaveFormatAsCSV": False,
-               "ConcatToCsv": False}    
-
-
-DataTypes = ["Green","Red"]
-Enzymes   = ["TaqI","PabI"]
-NumTransforms = [[1],[1]]
-fobj = open("D:\Sergey\FluorocodeMain\BactDatabase.json") # a list of genomes
-genomes = json.load(fobj)
-genomes = [x for x in genomes if x != '']
-genomes = random.sample(genomes, k=25)
-genomes.append('NC_000913.3')
-Params["Genomes"]  = genomes
-for i in range(0,len(DataTypes)):
-    Params["Enzyme"] = Enzymes[i]
-    Params["Type"]   =DataTypes[i]
-    
-    Params["NumTransformations"] = NumTransforms[i]
->>>>>>> 4a5300448db7e9e7435a5af9deff8b72af6f7a67
     CallTraceGeneration(Params)
 
    
