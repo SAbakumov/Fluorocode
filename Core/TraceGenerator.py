@@ -29,13 +29,16 @@ class TraceGenerator():
         self.ToAddRef = []
         self.ToAddLabels = []
         self.Positions = []
-        if os.path.exists(SaveDir):
-            self.SaveDir = SaveDir
+        if  SaveDir!=[]:
+            if os.path.exists(SaveDir):
+                self.SaveDir = SaveDir
+            else:
+                os.makedirs(SaveDir)
+                self.SaveDir = SaveDir
+            if not os.path.exists(os.path.join(self.SaveDir, self.Type)):
+                os.makedirs(os.path.join(self.SaveDir, self.Type))   
         else:
-            os.makedirs(SaveDir)
-            self.SaveDir = SaveDir
-        if not os.path.exists(os.path.join(self.SaveDir, self.Type)):
-            os.makedirs(os.path.join(self.SaveDir, self.Type))   
+            self.SaveDir = []
             
     def reset(self):
         self.ToAddLabeled = []
@@ -53,10 +56,17 @@ class TraceGenerator():
         EffLabeledTraces =[]
         ReferenceData   = []
         LabeledData     = []
+<<<<<<< HEAD
 
+=======
+        self.Ds.set_savingformat(self.SaveFormatAsCSV)
+       
+>>>>>>> 4a5300448db7e9e7435a5af9deff8b72af6f7a67
         for i in range(0,len(self.StretchingFactor)):
             self.SimTraces.set_stretch(self.StretchingFactor[i])
             self.SimTraces.set_recuts(self.ReCutsInPx[i],self.Gauss)
+            if self.FromLags:
+                self.Lags = np.random.choice([x for x in range(0,np.int64(np.round(len(self.SimTraces.RefProfile)-self.FragmentSize-100)))],400).tolist()
             self.SimTraces.set_labellingrate(self.LowerBoundEffLabelingRate, self.UpperBoundEffLabelingRate)
             self.SimTraces.set_lags(self.FromLags,self.Lags,self.step)
 
@@ -68,7 +78,7 @@ class TraceGenerator():
                 # self.SimTraces.get_WrongRegions()
                 trc = self.SimTraces.get_FluorocodeProfile(self.Gauss)[0]
                 
-             
+                
                 trc = np.squeeze(trc+self.NoiseAmp*np.random.uniform(0,1,self.FragmentSize))
                 trcRef =50*self.SimTraces.RefProfile[self.SimTraces.region[0]:self.SimTraces.region[1]]
 

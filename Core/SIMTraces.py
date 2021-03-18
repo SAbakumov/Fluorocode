@@ -160,6 +160,7 @@ class TSIMTraces:
             fpr_amps = self.GetDyeAmp(np.ones(fpr_locs.shape),-0.2,0.2)
             # fpr_amps = np.random.gamma(self.AmplitudeVariation[0],self.AmplitudeVariation[1],size = num_dyes)
             trc[(fpr_locs).astype(np.int64)] =  trc[(fpr_locs).astype(np.int64)]+fpr_amps
+
             if self.FPR2>0:
                 num_dyes2 = int( msc.PxTokb(self.frag_size, self)*self.FPR2/1000)
                 fpr_locs = np.random.uniform(self.region[0],self.region[1],num_dyes2)
