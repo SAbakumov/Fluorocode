@@ -47,7 +47,7 @@ def GenTraces(TraceGen, genome, transform, Params):
 def CallTraceGeneration(Params):
 
     np.random.seed(seed=44864)
-    # Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
+    Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
       
     if __name__ == '__main__':
     
@@ -102,7 +102,7 @@ def CallTraceGeneration(Params):
 
 Params = {"Wavelength" : 576,
                "NA" : 1.4,
-               "FragmentSize" :256,
+               "FragmentSize" :32,
                "PixelSize" : 32.25*2,
                "ResEnhancement":1,
                "FromLags" :True,
@@ -111,11 +111,11 @@ Params = {"Wavelength" : 576,
                "Enzyme" : 'TaqI',
                "NumTransformations"  :[1],
                "StretchingFactor" :[1.72],
-               "LowerBoundEffLabelingRate" : 0.7,
-               "UpperBoundEffLabelingRate" : 0.9,
+               "LowerBoundEffLabelingRate" : 0.6,
+               "UpperBoundEffLabelingRate" : 0.75,
                "amplitude_variation":[8.55696606597531,	3.23996722003733],
                "step" :2,
-               "PixelShift": 0.1,
+               "PixelShift": 2,
                "NoiseAmp": [5],
                "GenerateFullReference" :True,
                "LocalNormWindow":0,
@@ -124,23 +124,23 @@ Params = {"Wavelength" : 576,
                "Date" : str(date.today()),
                "Type" : "Training",
                "Genomes" : ['NC_000913.3'],
-               "FPR": 0.5, #per kb 0.5
+               "FPR": 0.8, #per kb 0.5
                "FPR2": 0.1, #per kb 0.2
                "Random-min": 52,
                "Random-max": 210,
-               "SaveFormatAsCSV": False,
-               "ConcatToCsv": False}    
+               "SaveFormatAsCSV": True,
+               "ConcatToCsv": True}    
 
 
-DataTypes = ["Green","Red"]
-Enzymes   = ["TaqI","PabI"]
-NumTransforms = [[1],[1]]
-fobj = open("D:\Sergey\FluorocodeMain\BactDatabase.json") # a list of genomes
-genomes = json.load(fobj)
-genomes = [x for x in genomes if x != '']
-genomes = random.sample(genomes, k=25)
-genomes.append('NC_000913.3')
-Params["Genomes"]  = genomes
+DataTypes = ["Green"]
+Enzymes   = ["TaqI"]
+NumTransforms = [[1]]
+# fobj = open("D:\Sergey\FluorocodeMain\BactDatabase.json") # a list of genomes
+# genomes = json.load(fobj)
+# genomes = [x for x in genomes if x != '']
+# genomes = random.sample(genomes, k=25)
+# genomes.append('NC_000913.3')
+# Params["Genomes"]  = genomes
 for i in range(0,len(DataTypes)):
     Params["Enzyme"] = Enzymes[i]
     Params["Type"]   =DataTypes[i]

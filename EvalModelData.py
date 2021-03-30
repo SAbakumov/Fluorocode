@@ -91,11 +91,12 @@ dt = DataLoader()
         
 # x_vFp = dt.LoadTracesFromCSV(r'D:\Elizabete\2020\20201118_imaged_SIM\ZYMOPerseus\segmented_traces_averages.csv')
 stretchFactors =[ 1.72]
-x_vReal,lags,Strch,Direc,CorrectNum,pval  = dt.LoadMatchedTracesFromCSV(r'D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Real\E-Coli-Elyra-WF\segmented_traces_averages.csv',r'D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Real\E-Coli-Elyra-WF\Results\FILE1-all-reference-species-results.csv', 256)
-x_vFp = dt.LoadTracesFromCSV(r'D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Circulomics\Image 4\Export\0\Traces\segmented_traces_averages.csv')
+x_vReal,lags,Strch,Direc,CorrectNum,pval  = dt.LoadMatchedTracesFromCSV(r'D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Real\E-Coli-Elyra-WF\segmented_traces_averages.csv',r'D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Real\E-Coli-Elyra-WF\Results-2\applogs\FILE1-all-reference-species-results.csv', 256)
+x_vFp = dt.LoadTracesFromCSV(r'D:\Elizabete\2021\20210226_VHar_Tienen\Circulomics\Image 4\Export\segmented_traces_averages.csv')
 x_vReal = dt.LoadTracesFromCSV(r'D:\Sergey\FluorocodeMain\FluorocodeMain\Data\Real\E-Coli-Elyra-WF\segmented_traces_averages.csv')
 
-PValFalse, PValTrue  = dt.LoadPValsFromCSV(r'D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Circulomics\Image 4\Export\0\Traces\segmented_traces_averages.csv',r'D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Circulomics\Image 4\VHarvey\FILE1-all-reference-species-results.csv', 256,['CP000790.1','CP000789.1','CP000791.1'])
+PValFalse, PValTrue  = dt.LoadPValsFromCSV(r'D:\Elizabete\2021\20210226_VHar_Tienen\Circulomics\Image 4\Export\segmented_traces_averages.csv', \
+    r'D:\Elizabete\2021\20210226_VHar_Tienen\Circulomics\Image 4\VHarvey\FILE1-all-reference-species-results.csv', 256,['CP000790.1','CP000789.1','CP000791.1'])
 
 IdealProfs = []  
 pval = [float(p) for p in pval]
