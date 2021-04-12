@@ -8,13 +8,17 @@ import os
 import numpy as np
 import PIL.Image as Image
 from aicspylibczi import CziFile
-import javabridge
-import bioformats
+# import javabridge
+# import bioformats
 import pathlib
+import czifile as cz
+import tifffile 
+import re
+import json
 ############# INPUT ###############
-path = r"D:\Elizabete\2021\VibrioHarveiTienen-2021-18-02_WaterNA0.2-MagBeads"
-name = "VibrioHarveiWater-StretchedPerseus.czi"
-threshold =2000
+path = r"D:\sergey.abakumov\TileScans\20210330"
+name = "RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIM.czi"
+threshold =3500
 xsize = 1024 #Only for Olympus .ets files
 ############# INPUT ###############
 
@@ -74,7 +78,19 @@ def GetFromETS(path, name, xsize,ysize, threshold):
 
 def GetFromCZI(path, name, threshold):
     img = CziFile(os.path.join(path, name))
-    savepath = os.path.join(path, "Export")
+    with cz.CziFile(os.path.join(path, name)) as czi:
+        xml_metadata = czi.metadata()
+    em_wavelength = re.findall(r'<EmissionWavelength>(.+?)</EmissionWavelength>',xml_metadata)
+    lens_NA = re.findall(r'<LensNA>(.+?)</LensNA>',xml_metadata)
+    pixelscaling = re.findall(r'<Distance Id="X">\n          <Value>(.+?)</Value>',xml_metadata)
+
+
+
+    prefix = name[:-4]
+    with open('dump.txt','w') as rb:
+        rb.write(xml_metadata)
+        rb.close()
+    savepath = os.path.join(path, prefix+"Export")
 
 
     dimensions = img.dims_shape()[0]
@@ -85,10 +101,22 @@ def GetFromCZI(path, name, threshold):
 
 
     for channel in range(0,dimensions["C"][1]):
+        if len(lens_NA)<=channel:
+            lens_NA.append(lens_NA[0])
+        if len(em_wavelength)<=channel:
+            em_wavelength.append(em_wavelength[0])
+        if len(pixelscaling)<=channel:
+            pixelscaling.append(pixelscaling[0])
+        if float(pixelscaling[channel])*10**9<40:
+            SIM = True
+        else:
+            SIM = False
+
         nex = 0
         nrotations = 1
         nphases    = 1
         try:
+            os.makedirs(os.path.join(savepath,str(channel),'Mask'))
             os.makedirs(os.path.join(savepath,str(channel)))
         except:
             print("Output directory exists for channel "+ str(channel)+ ", overwriting...")
@@ -108,10 +136,18 @@ def GetFromCZI(path, name, threshold):
             widefieldimg = widefieldimg/(nphases*nrotations)
             widefieldimg[np.where(widefieldimg>threshold)]=threshold
             widefieldimg = widefieldimg/threshold*255
-            
-            im = Image.fromarray(widefieldimg.astype(np.uint8))
 
-            im.save(os.path.join(savepath,str(channel) ,"Export_"+str(channel)+"_"+ str(nex)+ '.tif'))
+
+            im = widefieldimg.astype(np.uint8)
+
+
+
+            metadata = dict(NA=lens_NA[channel], EM=em_wavelength[channel], PX=pixelscaling[channel],SIM = SIM)
+            tifffile.imsave( os.path.join(savepath,str(channel) ,"Export_"+str(channel)+"_"+ str(nex)+ '.tif'), im,imagej=True, metadata=metadata)
+
+
+
+ 
             nex= nex+1
     
 

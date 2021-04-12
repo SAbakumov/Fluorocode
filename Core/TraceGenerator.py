@@ -70,7 +70,7 @@ class TraceGenerator():
                 self.SimTraces.set_region(offset,self.FragmentSize,self.step)
                 self.SimTraces.get_EffLabelledProfile()
                 self.SimTraces.get_FPR()
-                self.SimTraces.get_WrongRegions()
+                # self.SimTraces.get_WrongRegions()
                 trc = self.SimTraces.get_FluorocodeProfile(self.Gauss)[0]
                 
                 
@@ -108,6 +108,8 @@ class TraceGenerator():
       RandomTraces = []
       RandomLabels = []
       positions = []
+      self.Ds.set_savingformat(self.SaveFormatAsCSV)
+
       for i in range(0,len(self.StretchingFactor)):
               
             for offset in range(0,numprofiles):

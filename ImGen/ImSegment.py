@@ -11,6 +11,7 @@ from skimage.measure import profile_line
 import skimage
 import csv
 import os
+import json
 import matplotlib.pyplot as plt 
 
 def rgb2gray(rgb):
@@ -41,15 +42,18 @@ def get_rotation_angle(im):
 def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
     FullTraceArray = []
     Images = os.listdir(MaskFolder)
-    
+    if not os.path.exists(csv_path):
+        os.makedirs(csv_path)
     for image in Images:
         try:
             if image.endswith('.tif'):
                 FileName = image.replace( 'mask-','')
-                
                 print(str(FileName) + ' done')
-                
-                im =( rgb2gray( tiff.imread(os.path.join(MaskFolder,image)))*10).astype(np.int)
+                with tiff.TiffFile( os.path.join(ImFolder , FileName)) as tif:
+                    metadata = tif.imagej_metadata
+
+
+                im =( rgb2gray( tiff.imread(os.path.join(MaskFolder,image)))*10).astype(np.int64)
     
                 imOr =  tiff.imread(os.path.join(ImFolder , FileName))
                 FileName = image.replace( '.tif','.png')
@@ -57,7 +61,7 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
                 
                 Traces = []    
                 angle  = get_rotation_angle(im)    
-                reg = regionprops(im.astype(np.int))
+                reg = regionprops(im.astype(np.int64))
                 # if angle>0:
                 #     angle = -angle
                 
@@ -79,51 +83,53 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
         
                         detectedPartPadded = np.pad(detectedPart,((0, 0), (detectedPart.shape[0], detectedPart.shape[0])) , 'constant')    
                         detectedRot = scipy.ndimage.rotate(detectedPartPadded,angle,reshape=False)
-          
-                        for i in range(0 , detectedRot.shape[0]):
-                            detectedRot[:,i*15:i*15+10] = 0
                         all_labels = regionprops(skimage.measure.label(detectedRot))
-                        pivotpoints = []
-                        for det_label in all_labels:
-                            y0 ,x0  = det_label.centroid;
-                            pivotpoints.append(np.array([x0,y0]))
-                        
-                        
-                        pivotpoints  = np.array(pivotpoints)
-                        pivotpoints[:,0] = pivotpoints[:,0]- detectedRot.shape[1]/2
-                        pivotpoints[:,1] = pivotpoints[:,1]- detectedRot.shape[0]/2
-                      
-                        
-                        a  = pivotpoints
-                        a = a[a[:,0].argsort()]
-                        c, s = np.cos(- np.radians(angle)), np.sin(- np.radians(angle))
-                        R = np.array(((c, -s), (s, c)))
-                        a = a.dot(R)
-                        
-                        a[:,0] = a[:,0] + detectedPart.shape[1]/2
-                        a[:,1] = a[:,1] + detectedPart.shape[0]/2
-                        allprof = np.zeros(0)
-                        
-                        
-                        for i in range(0,len(a)-1):
-                            p = profile_line(detectedPartOr, (a[i,1], a[i,0]), (a[i+1,1], a[i+1,0]))
-                            allprof = np.concatenate([allprof,p[1:]])
+                        if len(all_labels)==1:
+                            for i in range(0 , detectedRot.shape[0]):
+                                detectedRot[:,i*15:i*15+10] = 0
+                            all_labels = regionprops(skimage.measure.label(detectedRot))
+                            pivotpoints = []
+                            for det_label in all_labels:
+                                y0 ,x0  = det_label.centroid
+                                pivotpoints.append(np.array([x0,y0]))
                             
-                        plt.imshow(detectedPartOr)
-                        Traces.append(allprof)
-                        plt.imshow(imOr)
-                        plt.plot(a[:,0]+bbox[1],a[:,1]+bbox[0],color='red')
+                            
+                            pivotpoints  = np.array(pivotpoints)
+                            pivotpoints[:,0] = pivotpoints[:,0]- detectedRot.shape[1]/2
+                            pivotpoints[:,1] = pivotpoints[:,1]- detectedRot.shape[0]/2
+                        
+                            
+                            a  = pivotpoints
+                            a = a[a[:,0].argsort()]
+                            c, s = np.cos(- np.radians(angle)), np.sin(- np.radians(angle))
+                            R = np.array(((c, -s), (s, c)))
+                            a = a.dot(R)
+                            
+                            a[:,0] = a[:,0] + detectedPart.shape[1]/2
+                            a[:,1] = a[:,1] + detectedPart.shape[0]/2
+                            allprof = np.zeros(0)
+                            
+                            
+                            for i in range(0,len(a)-1):
+                                p = profile_line(detectedPartOr, (a[i,1], a[i,0]), (a[i+1,1], a[i+1,0]),mode='constant')
+                                allprof = np.concatenate([allprof,p[1:]])
+                                
+                            plt.imshow(detectedPartOr)
+                            Traces.append(allprof)
+                            plt.imshow(imOr)
+                            plt.plot(a[:,0]+bbox[1],a[:,1]+bbox[0],color='red')
                 if any([len(x) for x in Traces])==0:
                     FullTraceArray = FullTraceArray+Traces
                 FullTraceArray = FullTraceArray+Traces
-                plt.savefig(os.path.join(r"D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Puragen\18-3ul\Processed",FileName))
     
                 plt.close('all')
                 
-            with open(csv_path, mode='w', newline='') as csvfile:
+            with open(os.path.join(csv_path, 'segmented_traces_averages.csv'),mode='w', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
                 for k in FullTraceArray:
                     writer.writerow( k[:])
+            with open( os.path.join(csv_path,'config.json'), 'w') as fp:
+                json.dump(metadata, fp)
         except:
             print("Failed")
                 
@@ -131,9 +137,10 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
 if __name__ == '__main__':
     
     ########### INPUT ############
-    MaskFolder = r'D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Puragen\18-3ul\Processed\Extracted Traces'
-    ImFolder   = r'D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Puragen\18-3ul\Processed'
-    csv_path = r'D:\Elizabete\2021\VibrioHarveiiWidefieldCirculomics-Elizabete\Puragen\18-3ul\Processed\segmented_traces_averages.csv'
+    
+    MaskFolder = r'D:\sergey.abakumov\TileScans\20210330\RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIMExport\0\Mask'
+    ImFolder   = r'D:\sergey.abakumov\TileScans\20210330\RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIMExport\0'
+    csv_path = r'D:\sergey.abakumov\TileScans\20210330\RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIMExport\0\Processed'
     
     extract_rotated_traces(MaskFolder, ImFolder,csv_path)
     ##############################

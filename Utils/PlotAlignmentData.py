@@ -12,9 +12,9 @@ SPECIFICITY_SINGLE_CHANNEL = []
 #%%
 ############### USER INPUT ###############
 lengthpx = 32
-pvalThs = 0.001
+pvalThs = 0.0003
 reference_genomes =  ['NC_000913.3.csv']
-path =  r'D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\Data\EColi\logs2'
+path =  r'D:\Sergey\TileScans\NC_016810\20210309_NC_016810_6ul_RVG_4Export\0\logs'
 name = 'FILE1-all-reference-species-results.csv'
 ############## USER INPUT END ############
 #%%
@@ -33,7 +33,7 @@ Genomes = []
 for item in allrows[0]:
     if "reference species" in item:
         try:
-            if len(IndItems)<20:
+            # if len(IndItems)<20:
                 IndItems.append(allrows[0].index(item))
                 Genomes.append(allrows[1][allrows[0].index(item)])
         except:
@@ -55,18 +55,18 @@ for genome in Genomes:
 for trace in allrows:
     unique_match = 0
     for match in IndItems:
-        pval = float( trace[match+5])
-        xcorrscore = float( trace[match+1])
+        # pval = float( trace[match+5])
+        pval = float( trace[match+6])
         if pval<pvalThs:
             Alignments[trace[match]]["Species-matches"] = Alignments[trace[match]]["Species-matches"]+1
-            Alignments[trace[match]]["XCorrscore"].append(xcorrscore) 
+            Alignments[trace[match]]["XCorrscore"].append(pval ) 
 
             unique_match+=1
             if unique_match==1:
                 unique_genome = trace[match]
     if unique_match==1:
         Alignments[unique_genome]["Unique-matches"] = Alignments[unique_genome]["Unique-matches"]+1
-        Alignments[unique_genome]["XCorrscore"].append(xcorrscore) 
+        Alignments[unique_genome]["XCorrscore"].append(pval ) 
     
 
 # %% GET BARS FOR TOTAL SPECIES
