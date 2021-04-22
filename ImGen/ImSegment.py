@@ -53,14 +53,14 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
                     metadata = tif.imagej_metadata
 
 
-                im =( rgb2gray( tiff.imread(os.path.join(MaskFolder,image)))*10).astype(np.int64)
+                im =( rgb2gray( tiff.imread(os.path.join(MaskFolder,image)))*10).astype(np.int64)+10
     
                 imOr =  tiff.imread(os.path.join(ImFolder , FileName))
                 FileName = image.replace( '.tif','.png')
     
-                
+                # print(np.unique(im.astype(np.int64)))
                 Traces = []    
-                angle  = get_rotation_angle(im)    
+                # angle  = get_rotation_angle(im)    
                 reg = regionprops(im.astype(np.int64))
                 # if angle>0:
                 #     angle = -angle
@@ -68,11 +68,15 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
                 
                 
     
-                for det in range(0,len(reg)-1):
+                for det in range(0,len(reg)):
+                    if reg[det].label!=2559:
                         detected = reg[det]
                         color = detected.label
                         bbox = detected.bbox
-                
+                        angle = 90-math.degrees(detected.orientation)
+
+
+                        
                         label_img = copy.deepcopy(im)
                         label_img[np.where(label_img!=color)]=0
                         label_img[np.where(label_img!=0)]=1
@@ -84,9 +88,10 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
                         detectedPartPadded = np.pad(detectedPart,((0, 0), (detectedPart.shape[0], detectedPart.shape[0])) , 'constant')    
                         detectedRot = scipy.ndimage.rotate(detectedPartPadded,angle,reshape=False)
                         all_labels = regionprops(skimage.measure.label(detectedRot))
-                        if len(all_labels)==1:
+                        if len(all_labels)==1 :
+                            
                             for i in range(0 , detectedRot.shape[0]):
-                                detectedRot[:,i*15:i*15+10] = 0
+                                detectedRot[:,i*20:i*20+15] = 0
                             all_labels = regionprops(skimage.measure.label(detectedRot))
                             pivotpoints = []
                             for det_label in all_labels:
@@ -108,39 +113,51 @@ def extract_rotated_traces(MaskFolder, ImFolder,csv_path):
                             a[:,0] = a[:,0] + detectedPart.shape[1]/2
                             a[:,1] = a[:,1] + detectedPart.shape[0]/2
                             allprof = np.zeros(0)
-                            
-                            
+                            plt.figure(figsize=(18,8))
+                            plt.subplot(1,2,1)
                             for i in range(0,len(a)-1):
-                                p = profile_line(detectedPartOr, (a[i,1], a[i,0]), (a[i+1,1], a[i+1,0]),mode='constant')
+                                p = profile_line(detectedPartOr, (a[i,1], a[i,0]), (a[i+1,1], a[i+1,0]),order=5,mode='constant')
                                 allprof = np.concatenate([allprof,p[1:]])
-                                
-                            plt.imshow(detectedPartOr)
-                            Traces.append(allprof)
-                            plt.imshow(imOr)
-                            plt.plot(a[:,0]+bbox[1],a[:,1]+bbox[0],color='red')
+                            if len(allprof)>0:
+                                plt.imshow(detectedPartOr)
+                                plt.subplot(1,2,2)
+                                plt.plot(allprof)
+                                plt.savefig('foo.png')
+                                plt.close('all')      
+                                Traces.append(allprof)
+                            # plt.imshow(imOr)
+                            # plt.plot(a[:,0]+bbox[1],a[:,1]+bbox[0],color='red')
                 if any([len(x) for x in Traces])==0:
                     FullTraceArray = FullTraceArray+Traces
                 FullTraceArray = FullTraceArray+Traces
     
                 plt.close('all')
-                
-            with open(os.path.join(csv_path, 'segmented_traces_averages.csv'),mode='w', newline='') as csvfile:
-                writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                for k in FullTraceArray:
-                    writer.writerow( k[:])
-            with open( os.path.join(csv_path,'config.json'), 'w') as fp:
-                json.dump(metadata, fp)
-        except:
+                    
+
+
+                with open(os.path.join(csv_path, 'segmented_traces_averages.csv'),mode='w', newline='') as csvfile:
+                    writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                    for k in FullTraceArray:
+                        writer.writerow( k[:])
+                with open( os.path.join(csv_path,'config.json'), 'w') as fp:
+                    json.dump(metadata, fp)
+        except Exception as e:
             print("Failed")
+            print(e)
+
                 
 
 if __name__ == '__main__':
     
     ########### INPUT ############
-    
-    MaskFolder = r'D:\sergey.abakumov\TileScans\20210330\RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIMExport\0\Mask'
-    ImFolder   = r'D:\sergey.abakumov\TileScans\20210330\RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIMExport\0'
-    csv_path = r'D:\sergey.abakumov\TileScans\20210330\RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIMExport\0\Processed'
-    
-    extract_rotated_traces(MaskFolder, ImFolder,csv_path)
+    # folders = ['SIM-1Export' ,'SIM-2Export','SIM-4Export','SIM-6Export','SIM-8Export','SIM-1-NoBaselineCutExport','SIM-2-NoBaselineCutExport','SIM-4-NoBaselineCutExport','SIM-6-NoBaselineCutExport','SIM-8-NoBaselineCutExport']
+    folders = ['Export']
+    base = r'D:\Elizabete\2021\20210420_CellSens\_FOV_017_\stack1'
+    for folder in folders:
+        MaskFolder = os.path.join(base, folder,'0\Mask')
+        ImFolder   =  os.path.join(base, folder,'0')
+        csv_path = os.path.join(base,folder,'0\Results')
+        
+        extract_rotated_traces(MaskFolder, ImFolder,csv_path)
+
     ##############################

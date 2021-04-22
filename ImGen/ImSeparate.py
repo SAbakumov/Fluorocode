@@ -8,18 +8,27 @@ import os
 import numpy as np
 import PIL.Image as Image
 from aicspylibczi import CziFile
-# import javabridge
-# import bioformats
+import javabridge
+import bioformats
 import pathlib
 import czifile as cz
 import tifffile 
 import re
 import json
 ############# INPUT ###############
-path = r"D:\sergey.abakumov\TileScans\20210330"
-name = "RAW_SIM_TS_10x10_71A_Lambda_45minMTC35_YOYO1_488nm561nm_3_SIM.czi"
-threshold =3500
-xsize = 1024 #Only for Olympus .ets files
+path = r"F:\Elizabete\20210401\_FOV____07_\stack1"
+name = "frame_t_0.ets"
+threshold =65000    # MAX YOU CAN PUT IS 65536
+renormalized =False # Disabling renormalization will remove any thresholding and store original images split up as is
+
+
+
+#####Only for Olympus .ets files###
+xsize = 512 
+NA = 1.45 
+EM = 590
+PX = 107
+SIM = False 
 ############# INPUT ###############
 
 
@@ -66,11 +75,18 @@ def GetFromETS(path, name, xsize,ysize, threshold):
     for x in range(0,XLimit,xsize):
         for y in range(0,YLimit,xsize):
             widefieldimg = img[x:x+xsize,y:y+ysize]
-            widefieldimg[np.where(widefieldimg>threshold)]=threshold
-            widefieldimg = widefieldimg/threshold*255   
+            if renormalized:
+                widefieldimg[np.where(widefieldimg>threshold)]=threshold
+                widefieldimg = widefieldimg/threshold*255
+                im = widefieldimg.astype(np.uint8)
+            else:
+                widefieldimg = widefieldimg-10
+                im = widefieldimg.astype(np.uint16)
+            
+            # im = Image.fromarray(widefieldimg.astype(np.uint8))
+            metadata = dict(NA=NA, EM=EM, PX=PX*10**(-9),SIM = SIM,threshold = threshold)
 
-            im = Image.fromarray(widefieldimg.astype(np.uint8))
-            im.save(os.path.join(savepath,str(0) ,"Export_"+str(0)+"_"+ str(nex)+ '.tif'))
+            tifffile.imsave( os.path.join(savepath,str(0) ,"Export_"+str(0)+"_"+ str(nex)+ '.tif'), im,imagej=True, metadata=metadata)
             nex= nex+1            
 
 
@@ -134,15 +150,17 @@ def GetFromCZI(path, name, threshold):
                     img_cropped,shp = img.read_image(C = channel, H=phase,R=rotation,M=image)
                     widefieldimg = widefieldimg + np.squeeze(img_cropped)
             widefieldimg = widefieldimg/(nphases*nrotations)
-            widefieldimg[np.where(widefieldimg>threshold)]=threshold
-            widefieldimg = widefieldimg/threshold*255
+            if renormalized:
+                widefieldimg[np.where(widefieldimg>threshold)]=threshold
+                widefieldimg = widefieldimg/threshold*255
+                im = widefieldimg.astype(np.uint8)
+            else:
+                im = widefieldimg.astype(np.uint16)
+               
 
 
-            im = widefieldimg.astype(np.uint8)
 
-
-
-            metadata = dict(NA=lens_NA[channel], EM=em_wavelength[channel], PX=pixelscaling[channel],SIM = SIM)
+            metadata = dict(NA=lens_NA[channel], EM=em_wavelength[channel], PX=pixelscaling[channel],SIM = SIM,threshold = threshold)
             tifffile.imsave( os.path.join(savepath,str(channel) ,"Export_"+str(channel)+"_"+ str(nex)+ '.tif'), im,imagej=True, metadata=metadata)
 
 
