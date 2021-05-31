@@ -8,6 +8,8 @@ Created on Tue Oct 20 20:55:37 2020
 import os
 import tensorflow as tf
 from CNNHelper.CNN1D import CNN1D 
+from CNNHelper.AutoEncoder1D import AutoEncoder1D
+
 import Core.Misc as Misc
 import json 
 from datetime import date
@@ -16,7 +18,7 @@ from Core.DataHandler import DataLoader
 import numpy as np
 import sys
 import zipfile
-
+import pickle
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -54,14 +56,6 @@ def GetArray(X_Data):
 
     return X_DataPast, X_DataFuture
 
-if gpus:
-    
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-    
-    except RuntimeError as e:
-        print(e)
 
 class ValDataEval(tf.keras.callbacks.Callback):
     def __init__(self, x_v,y_v,num_iter,logpath):
@@ -71,33 +65,42 @@ class ValDataEval(tf.keras.callbacks.Callback):
         self.CurrentLoss = 0
         self.CurrentAcc = 0
         self.LogPath = logpath
-        
+        self.TrainLoss = []
+        self.ValLoss = []
+        self.TrainAcc = []
+        self.ValAcc = []
+
     def on_batch_end(self, batch, logs):     
 
-        if (batch % 5000 == 0  and batch>=5000) or batch==0:
-            f = open(self.LogPath)
-            log = json.load(f)
-            f.close()
-            log['Test-Loss'].append(logs['loss'])
-            log['Test-acc'].append(logs['accuracy'])
-            results = self.model.evaluate(self.ValDataX,self.ValDataY,batch_size=256,verbose=0)
-            ls  = results[0]
-            log['Val-Loss'].append(ls)
-            log['Val-acc'].append(results[1])
-            self.CurrentLoss = ls
-            self.CurrentAcc = results[1]
-            log = json.dumps(log)
+        self.TrainLoss.append(logs['loss'])
+        self.TrainAcc.append(logs['accuracy'])
+    def on_epoch_end(self,epoch,logs):
+        self.ValLoss.append(logs['val_loss'])
+        self.ValAcc.append(logs['val_accuracy'])
+        # if (batch % 5000 == 0  and batch>=5000) or batch==0:
+        #     f = open(self.LogPath)
+        #     log = json.load(f)
+        #     f.close()
+        #     log['Test-Loss'].append(logs['loss'])
+        #     log['Test-acc'].append(logs['accuracy'])
+        #     results = self.model.evaluate(self.ValDataX,self.ValDataY,batch_size=256,verbose=0)
+        #     ls  = results[0]
+        #     log['Val-Loss'].append(ls)
+        #     log['Val-acc'].append(results[1])
+        #     self.CurrentLoss = ls
+        #     self.CurrentAcc = results[1]
+        #     log = json.dumps(log)
 
-            f = open(self.LogPath,"w")
-            f.write(log)
-            f.close()
+        #     f = open(self.LogPath,"w")
+        #     f.write(log)
+        #     f.close()
                         
             
-        sys.stdout.write("\r"+ str(batch) + ' out of ' + str(self.NumIter) + ' || '  + ' Training loss: ' + format(logs['loss'], '.4f') + ', Training acc: ' +  format(logs['accuracy'], '.4f') + ' || ' + ' Validation loss: ' + format( self.CurrentLoss, '.4f') + ', Validation acc: ' + format( self.CurrentAcc, '.4f') )
-        sys.stdout.flush()
+        # sys.stdout.write("\r"+ str(batch) + ' out of ' + str(self.NumIter) + ' || '  + ' Training loss: ' + format(logs['loss'], '.4f') + ', Training acc: ' +  format(logs['accuracy'], '.4f') + ' || ' + ' Validation loss: ' + format( self.CurrentLoss, '.4f') + ', Validation acc: ' + format( self.CurrentAcc, '.4f') )
+        # sys.stdout.flush()
 
-    def on_epoch_begin(self,epoch,logs):
-        print('\n'+ 'Epoch: '+ str(epoch)+'\n')
+    # def on_epoch_begin(self,epoch,logs):
+    #     print('\n'+ 'Epoch: '+ str(epoch)+'\n')
 
         
         
@@ -112,10 +115,13 @@ class ValDataEval(tf.keras.callbacks.Callback):
 
 # model = LSTMAutoEncoder1D();
 model = CNN1D(1)
+# model = model.Autoencoder
 
-opt = keras.optimizers.Adam(learning_rate=0.0001)
+opt = keras.optimizers.Adam(learning_rate=0.001)
 
+# model.compile(optimizer =opt, loss="bce", metrics='accuracy')
 model.compile(optimizer =opt, loss="bce", metrics='accuracy')
+
 
 model.summary()
 mcp_save_bestAcc = keras.callbacks.ModelCheckpoint(os.path.join(savedir,'modelBestAcc.hdf5'), save_best_only=True, monitor='val_accuracy', mode='max')
@@ -159,5 +165,12 @@ btchsz = 256
 num_iter = int( np.round( X_Data.shape[0]/btchsz))
 CallBackEval =  ValDataEval(x_v, Label_DataV ,num_iter,os.path.join(savedir,'logs.json'))
 
-history=model.fit(X_Data, Label_Data  , batch_size = btchsz, epochs=1000, verbose = 1, validation_data = (x_v , Label_DataV  ), callbacks=[mcp_save_bestAcc,mcp_save_bestLoss])
 
+
+history=model.fit(X_Data, Label_Data , batch_size = btchsz, epochs=10, verbose = 1, validation_data = (x_v ,Label_DataV ), callbacks=[CallBackEval,mcp_save_bestAcc,mcp_save_bestLoss])
+
+with open(os.path.join(savedir,'history.pkl'), 'wb') as file:
+
+    pickle.dump(history.history, file)
+
+print(os.path.join(savedir,'history.pkl'))

@@ -6,10 +6,11 @@ Created on Mon Dec 14 22:04:34 2020
 """
 
 
-import numpy as np
+import random,numpy as np
 import time
 import os
 import csv
+import matplotlib.pyplot as plt
 from Core import Misc
 
 
@@ -67,6 +68,7 @@ class TraceGenerator():
             self.SimTraces.set_lags(self.FromLags,self.Lags,self.step)
             
             for offset in self.SimTraces.Lags:
+
                 self.SimTraces.set_region(offset,self.FragmentSize,self.step)
                 self.SimTraces.get_EffLabelledProfile()
                 self.SimTraces.get_FPR()
@@ -87,16 +89,20 @@ class TraceGenerator():
             EffLabeledTraces = EffLabeledTraces + self.ToAddLabeled
             ReferenceData  = ReferenceData + self.ToAddRef
             LabeledData    = LabeledData   + self.ToAddLabels
+            
             self.reset()
-             
         counts=self.Ds.BatchStoreData( EffLabeledTraces ,ReferenceData,LabeledData,self.Positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type) ,str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
         print('\n' + str(time.time()-t) ,end="")
-        return counts
+        return counts , EffLabeledTraces
     
     
     def ObtainLabel(self, genome):
-        lbl = np.zeros([len(self.Genomes)])
-        lbl[self.Genomes.index(genome)] = 1
+        if not hasattr(self, "Classes" ):
+            lbl = np.zeros([len(self.Genomes)])
+            lbl[self.Genomes.index(genome)] = 1
+        else:
+            lbl = np.zeros([len(self.Genomes)])
+            lbl[self.Classes[self.Genomes.index(genome)]] = 1            
           
         return lbl
       
@@ -130,14 +136,22 @@ class TraceGenerator():
 
       
       counts = self.Ds.BatchStoreData(RandomTraces,[],RandomLabels,positions,self.Dt,self.Ds, os.path.join(self.SaveDir,self.Type),str(batchnum)+"-"+str(self.Genomes.index(genome)),self.Params)
-      return counts
+      return counts, RandomTraces
       
     def SaveMap(self,Map,genome):
       with open(os.path.join(self.SaveDir,self.Type,'GEN-'+genome+'.csv'), 'w') as f: 
            write = csv.writer(f) 
            Map = [str(x) for x in Map]
            write.writerow(Map)
-  
-                            
+   
+
+    def PlotNTraces(self, LabelledTraces,gene):   
+        Traces = [item for labelledtraces in LabelledTraces for item in labelledtraces]
+        plt.figure(figsize=(5,30)) 
+        for i in range(1,10):
+            plt.subplot(10, 1, i)
+            plt.plot(random.choice(Traces))      
+
+        plt.savefig(os.path.join(r"D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode",gene+".png"))
                 
     

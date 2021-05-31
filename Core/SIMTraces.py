@@ -4,11 +4,13 @@ Created on Sun Sep 27 12:37:06 2020
 
 @author: Sergey
 """
-import numpy as np
+import sys,os,numpy as np
+sys.path.insert(1, os.path.join(os.path.dirname(__file__)))
+
 from Bio import Entrez
 from Bio import SeqIO
-import Core.Misc as msc
-import Core.RandomTraceGenerator as RTG
+import Misc as msc
+import RandomTraceGenerator as RTG
 import random
 import time
 import os
@@ -39,11 +41,16 @@ class TSIMTraces:
           self.RefProfile= self.GetFluorocodeProfile(FullTrace,gauss)[0]
       
       def set_region(self, *args):
-          shft = np.random.randint(0,args[2])
-          self.region = [args[0]+shft,args[0]+shft+args[1]]
+          if type(args[1])==list:
+            shft = np.arandom.randint(args[0][1],args[0][2])
+            self.region = [args[0],args[0]+shft]
+          else:
+            shft = np.random.randint(0,args[2])
+            self.region = [args[0]+shft,args[0]+shft+args[1]]
           
       def set_lags(self,FromLags,Lags,step):
           if FromLags:
+              Lags = [x for x in Lags if x<len(self.RefProfile)-self.frag_size-20]
               self.Lags = Lags
           else:
               self.Lags = list( range(20,len(self.RefProfile)-self.frag_size-20,step))

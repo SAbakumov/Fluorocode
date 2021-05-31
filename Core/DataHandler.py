@@ -4,14 +4,16 @@ Created on Wed Sep 30 14:23:08 2020
 
 @author: Sergey
 """
-
+import sys,os
 from Bio import Restriction
-import Core.SIMTraces
+
+sys.path.insert(1, os.path.join(os.path.dirname(__file__)))
+
+# import SIMTraces
 import numpy as np
-import os
 import tifffile as tiff
 import cv2
-import Core.Misc as msc
+import Misc as msc
 # import tensorflow as tf
 import scipy
 import scipy.io
@@ -26,6 +28,7 @@ class DataLoader():
         self.ShuffleData = True
     def set_savingformat(self, saveformat):
         self.AsCSV = saveformat    
+        
     def PrepareTrainingData(self,folder):
         print('Loading Training images from folder ' + folder)
         TrainingImages = []

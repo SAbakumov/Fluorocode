@@ -65,7 +65,7 @@ def GetCombinedRandomizedTraces(ListOfRandomTraces,numclasses):
 
             
 def GetRandomFixedLengthTraces(arr,length,numsamples):
-  AllTraces  = [];
+  AllTraces  = []
   
   # step = np.max(arr)/self.numsamples
   step = np.max(arr)/numsamples

@@ -5,11 +5,13 @@ Created on Sun Sep 27 19:55:53 2020
 @author: Sergey
 """
 import Bio
+import sys,os
+sys.path.insert(1, os.path.join(os.path.dirname(__file__)))
+
 from Bio import Restriction
-import Core.SIMTraces
+import SIMTraces
 import numpy as np
-import sys
-import os
+
 import json
 import csv
 from datetime import date
@@ -132,7 +134,7 @@ def kbToPx(arr,args):
 def PxTokb(arr,args):
     if type(args)==list:
         stretch, nmbp, pixelsz = args[0] , args[1] ,  args[2]
-    elif type(args)==Core.SIMTraces.TSIMTraces:
+    elif type(args)==SIMTraces.TSIMTraces:
         stretch, nmbp, pixelsz = args.Stretch , args.BPSize ,  args.PixelSize
     else:
         print('Unsupported data type in kbToPx, aborting execution')
@@ -199,18 +201,28 @@ def GetLocalNormFromPars(trace,strch, bpsize,pixelsize,window):
                       
     
 def normalize_local(npoints, trace):
-  npoints = int(npoints)
-  window = np.ones([npoints,1], dtype = int)/npoints
-  trace2 = np.reshape(trace, trace.size)
-  window = np.reshape(window,window.size)
-  local_mean = np.convolve(trace2,window,'same')
-  out = np.subtract(trace2 ,local_mean)
-  out2 = out*out
-  local_var = np.convolve(out2,window,'same')
-  if local_var[local_var > 0].sum() > 0:
-     local_var[local_var == 0] = min(local_var[local_var > 0])
-     out = out/np.sqrt(local_var);
-  return out
+#   npoints = int(npoints)
+#   window = np.ones([npoints,1], dtype = int)/npoints
+#   trace2 = np.reshape(trace, trace.size)
+#   window = np.reshape(window,window.size)
+#   local_mean = np.convolve(trace2,window,'same')
+#   out = np.subtract(trace2 ,local_mean)
+#   out2 = out*out
+#   local_var = np.convolve(out2,window,'same')
+#   if local_var[local_var > 0].sum() > 0:
+#      local_var[local_var == 0] = min(local_var[local_var > 0])
+#      out = out/np.sqrt(local_var);
+#   return out
+    window = np.ones(np.min([np.round(npoints).astype(np.int64), len(trace)])) / np.min([np.round(npoints).astype(np.int64), len(trace)])
+    trace = np.pad(trace, (len(window),len(window)), 'constant',constant_values=(trace[0],trace[-1]))
+    local_mean = np.convolve(trace, window, 'same')
+    out = trace - local_mean
+    local_var = np.convolve(np.power(out, 2), window, 'same')
+    if np.sum(local_var[local_var > 0]) > 0:
+        local_var[local_var == 0] = np.min(local_var[local_var > 0]) # avoid division by zero in next step
+        out = out / np.sqrt(local_var)
+    out = out[len(window):len(out)-len(window)]
+    return out
         
         
 def EmptyDataFolder(mypath):
