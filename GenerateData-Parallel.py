@@ -42,14 +42,16 @@ def GenTraces(TraceGen, genome, transform, Params):
         counts, traces = TraceGen.ObtainTraces(transform, genome)
         
     elif genome == 'Random':
-        counts, traces = TraceGen.ObtainRandomTraces(Params["Random-max"],Params["Random-min"],40000,genome,transform)
+        # counts, traces = TraceGen.ObtainRandomTraces(Params["Random-max"],Params["Random-min"],20000,genome,transform)
+        counts, traces = TraceGen.ObtainRandomTraces(Params["Random-max"],Params["Random-min"],30000,genome,transform)
+
     return counts , traces
 
 
 
 def CallTraceGeneration(Params):
 
-    np.random.seed(seed=44864)
+    # np.random.seed(seed=44864)
     # Params["Lags"] = np.random.choice([x for x in range(0,25000)],400).tolist()
       
     if __name__ == '__main__':
@@ -73,15 +75,22 @@ def CallTraceGeneration(Params):
 
         Dt.ShuffleData =Params["ShuffleData"]
         Ds.ShuffleData =Params["ShuffleData"]
-   
-        for genome in Params["Genomes"]:
 
-            SIMTRC     = SIMTraces.TSIMTraces(genome,Params["StretchingFactor"],0.34,0,Params["Enzyme"],Params["PixelSize"],Params['PixelShift'],Params[ "amplitude_variation"] ,Params["FPR"],Params["FPR2"],Params["FragmentSize"])  
+        if "Database" in Params.keys():
+            for  genome in os.listdir(Params["Database"]):
+                Params["Genomes"].append(genome)
+
+
+        for genome in Params["Genomes"]:
+            
+            SIMTRC     = SIMTraces.TSIMTraces(genome,Params["StretchingFactor"],0.34,0,Params["Enzyme"],Params["PixelSize"],Params['PixelShift'],Params[ "amplitude_variation"] ,Params["FPR"],Params["FPR2"],Params["FragmentSize"])
+            if "Database" in Params.keys():
+                SIMTRC.set_db_path(Params["Database"])
             Gauss      = Misc.GetGauss1d(Params["FragmentSize"] , Misc.FWHMtoSigma(Misc.GetFWHM(Params["Wavelength"],Params["NA"],Params["ResEnhancement"])),Params["PixelSize"] )
             [Map,ReCutsInPx]  = SIMTRC.GetGenome(Params,genome)
             TraceGen   = TraceGenerator.TraceGenerator(SIMTRC, ReCutsInPx,Gauss,[],Ds, Dt,Params,DataSaveDir)
             TraceGen.SaveMap(Map,genome)
-         
+            
 
             
             arg = [tuple([TraceGen,genome, t,Params]) for t in range(Params["NumTransformations"][Params["Genomes"].index(genome)]) ]
@@ -108,7 +117,7 @@ def CallTraceGeneration(Params):
 
 Params = {"Wavelength" : 586,
         "NA" : 1.2,
-        "FragmentSize" :256,
+        "FragmentSize" :412,
         "PixelSize" : 31.3*2,
         "ResEnhancement":1,
         "FromLags" :False,
@@ -116,32 +125,48 @@ Params = {"Wavelength" : 586,
         "Lags":[],
         "Enzyme" : 'TaqI',
         "NumTransformations"  :[50],
-        "StretchingFactor" :[1.71],
+        "StretchingFactor" :[1.7],
         "LowerBoundEffLabelingRate" : 0.75,
         "UpperBoundEffLabelingRate" : 0.95,
         "amplitude_variation":[8.55696606597531,	3.23996722003733],
         "step" :3,
-        "PixelShift": 0.5,
-        "NoiseAmp": [5],
+        "PixelShift":1.2,
+        "NoiseAmp": [0.3],
         "GenerateFullReference" :True,
         "LocalNormWindow":10000,
         "ZNorm": False,
         "Norm":  False,
         "Date" : str(date.today()),
         "Type" : "Training",
-        "Genomes" : ['NC_000913.3','Random'],
-        "Classes": [1,0],
-        "FPR": 0.2, #per kb 0.5
-        "FPR2": 0.1, #per kb 0.2
-        "Random-min": 52,
-        "Random-max": 210,
+        # "Genomes" : ['Random','NC_000913.3','CP034237.1','NC_007795.1','NC_003197.2','NC_000964.3','NZ_CP045605.1','LR215978.1','NC_004567','NC_004307','CR626927.1'],
+        "Genomes" : ['Random'],
+        "Database": r"D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\DataBases\GUT",
+        # "Classes": [1,0],
+        "FPR": 0.7, #per kb 0.5
+        "FPR2": 0.2, #per kb 0.2
+        "Random-min": 1.2, #per kb
+        "Random-max": 5.8, #per kb
+        # "Random-min": 10,
+        # "Random-max": 15,
         "SaveFormatAsCSV":False,
         "ConcatToCsv":False}    
 
 
 DataTypes = ["Training","Validation"]
-NumTransforms = [[50,50],[5,5]]
-# NumTransforms = [[1]]
+# DataTypes = ["Testing"]
+
+TrainNumTrans = (65*np.ones(len(os.listdir(Params["Database"]))+len(Params["Genomes"]),dtype=np.int32)).tolist()
+ValNumTrans = (5*np.ones(len(os.listdir(Params["Database"]))+len(Params["Genomes"]),dtype=np.int32)).tolist()
+
+# DataTypes = ["AutoencoderTrain","AutoencoderVal"]
+NumTransforms = [TrainNumTrans , ValNumTrans]
+
+# NumTransforms = [[65,65,65,65,65,65,65,65,65,65,65],[5,5,5,5,5,5,5,5,5,5,5]]
+# NumTransforms = [[5],[2]]
+
+# DataTypes = ["Testing"]
+# NumTransforms = [[180,180],[20,20]]
+# NumTransforms = [[1,1]]
 
 for i in range(0,len(DataTypes)):
     Params["Type"]   =DataTypes[i]

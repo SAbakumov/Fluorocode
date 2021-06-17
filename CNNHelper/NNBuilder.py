@@ -30,7 +30,7 @@ class Blocks:
 
             
 
-            x = layers.Conv2D(KernelNumber,KernelSize, Stride , padding = 'same')(x)    
+            x = layers.Conv1D(KernelNumber,KernelSize, Stride , padding = 'same')(x)    
 
             # x = layers.Conv2D(KernelNumber,KernelSize, Stride ,kernel_regularizer=tf.keras.regularizers.l2(0.001), padding = 'same')(x)    
             if Activation!=None:

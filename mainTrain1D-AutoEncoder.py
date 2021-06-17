@@ -10,8 +10,7 @@ import tensorflow as tf
 from CNNHelper.CNN1D import CNN1D 
 from CNNHelper.DenseDNA import MLPDNA
 from CNNHelper.AutoEncoder1D import AutoEncoder1D
-from CNNHelper.ResNET import ResNet50
-from keras_flops import get_flops
+
 
 import Core.Misc as Misc
 import json 
@@ -77,10 +76,10 @@ class ValDataEval(tf.keras.callbacks.Callback):
     def on_batch_end(self, batch, logs):     
 
         self.TrainLoss.append(logs['loss'])
-        self.TrainAcc.append(logs['accuracy'])
+        self.TrainAcc.append(logs['mae'])
     def on_epoch_end(self,epoch,logs):
         self.ValLoss.append(logs['val_loss'])
-        self.ValAcc.append(logs['val_accuracy'])
+        self.ValAcc.append(logs['val_mae'])
         # if (batch % 5000 == 0  and batch>=5000) or batch==0:
         #     f = open(self.LogPath)
         #     log = json.load(f)
@@ -118,19 +117,15 @@ class ValDataEval(tf.keras.callbacks.Callback):
 
 
 # model = LSTMAutoEncoder1D();
-model = CNN1D(51)
-flops = get_flops(model, batch_size=1)
-print(f"FLOPS: {flops / 10 ** 9:.03} G")
+# model = CNN1D(1)
+model = AutoEncoder1D()
 
-# model = MLPDNA(1)
-# model = ResNet50(7,412)
-# model = model.Autoencoder
+model = model.Autoencoder
 
-opt = keras.optimizers.Adam(learning_rate=0.0001)
-# opt = keras.optimizers.SGD(learning_rate=0.001,momentum=0.01)
+opt = keras.optimizers.Adam(learning_rate=0.001)
 
 # model.compile(optimizer =opt, loss="bce", metrics='accuracy')
-model.compile(optimizer =opt, loss='categorical_crossentropy', metrics='accuracy')
+model.compile(optimizer =opt, loss="mae", metrics='mae')
 
 
 model.summary()
@@ -139,60 +134,49 @@ mcp_save_bestLoss = keras.callbacks.ModelCheckpoint(os.path.join(savedir,'modelB
 
 
 # model.load_weights(r'D:\Sergey\FluorocodeMain\FluorocodeMain\StoredModels\2021-02-21\Training_3\modelBestLoss.hdf5' )
-# model.load_weights(r'D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\StoredModels\2021-06-13\Training_1\modelBestAcc.hdf5' )
+# model.load_weights(r'D:\Sergey\FluorocodeMain\Fluorocode\Fluorocode\StoredModels\2021-06-01\Training_1\modelBestAcc.hdf5' )
 
 dt = DataLoader()
-pathTraining = os.path.join(    DataSaveDir, "Training")
-pathValidation = os.path.join(    DataSaveDir, "Validation")
+pathTraining = os.path.join(    DataSaveDir, "AutoencoderTrain")
+pathValidation = os.path.join(    DataSaveDir, "AutoencoderVal")
 zip_file = zipfile.ZipFile(os.path.join(savedir,'TrainingParams.zip'), "w")
-zip_file.write(os.path.join(pathTraining,'ParamsTraining.csv'),arcname = 'ParamsTraining.csv')
-zip_file.write(os.path.join(pathValidation,'ParamsValidation.csv'),arcname = 'ParamsValidation.csv')
+zip_file.write(os.path.join(pathTraining,'ParamsAutoencoderTrain.csv'),arcname = 'ParamsTraining.csv')
+zip_file.write(os.path.join(pathValidation,'ParamsAutoencoderVal.csv'),arcname = 'ParamsValidation.csv')
 zip_file.close()
 
 
 X_Data ,Y_Data,Label_Data, pos  = dt.BatchLoadTrainingData(os.path.join(   pathTraining))
 x_v ,y_v   ,   Label_DataV, posV    = dt.BatchLoadTrainingData(os.path.join(   pathValidation))
 
-# Label_Data = np.squeeze(Label_Data[:,0,:])
-# Label_DataV = np.squeeze(Label_DataV[:,0,:])
 
-Label_Data = np.squeeze(Label_Data)
-Label_DataV = np.squeeze(Label_DataV)
 
-# X_Data =X_Data[0:58000,:,:]
-# Label_Data  =Label_Data[0:58000,:]
+Label_Data = np.squeeze(Label_Data[:,0,:])
+Label_DataV = np.squeeze(Label_DataV[:,0,:])
 
+
+
+X_Data = X_Data/100
+x_v = x_v/100
 # X_Data = X_Data[:,92:92+256,:]
 # x_v =x_v[:,92:92+256,:]
+plt.figure()
+plt.plot(X_Data[np.where(Label_Data==1)[0][0],:,:],color='b')
+plt.figure()
+plt.plot(x_v[np.where(Label_Data==1)[0][0],:,:],color='r')
 #%%
-opt = keras.optimizers.Adam(learning_rate=0.0001)
-# opt = keras.optimizers.SGD(learning_rate=0.001,momentum=0.01)
-
-# model.compile(optimizer =opt, loss="bce", metrics='accuracy')
-model.compile(optimizer =opt, loss='categorical_crossentropy', metrics='accuracy')
-plt.figure()
-# plt.plot(X_Data[np.where(Label_Data==1)[0][0],:,:],color='b')
-plt.plot(X_Data[0,:,:],color='b')
-
-plt.figure()
-plt.plot(X_Data[1,:,:],color='r')
-
-plt.figure()
-plt.plot(X_Data[2,:,:],color='g')
-
 
 
 model_json = model.to_json()
 with open(os.path.join(savedir ,"model-Architecture.json"), "w") as json_file:
     json_file.write(model_json)
     
-btchsz = 256
+btchsz = 64
 num_iter = int( np.round( X_Data.shape[0]/btchsz))
-CallBackEval =  ValDataEval(x_v, Label_DataV ,num_iter,os.path.join(savedir,'logs.json'))
+CallBackEval =  ValDataEval(x_v, x_v ,num_iter,os.path.join(savedir,'logs.json'))
 
 
 
-history=model.fit(X_Data, Label_Data , batch_size = btchsz, epochs=10, verbose = 1, validation_data = (x_v ,Label_DataV ), callbacks=[CallBackEval,mcp_save_bestAcc,mcp_save_bestLoss])
+history=model.fit(X_Data,X_Data , batch_size = btchsz, epochs=10, verbose = 1, validation_data = (x_v ,x_v), callbacks=[CallBackEval,mcp_save_bestAcc,mcp_save_bestLoss])
 #%%
 with open(os.path.join(savedir,'history.pkl'), 'wb') as file:
 

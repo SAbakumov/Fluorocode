@@ -20,9 +20,9 @@ def CNN1D(classes):
 
     
 
-    x = layers.Conv1D(128,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(64,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(128,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(64,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
     x = layers.MaxPooling1D(pool_size=2)(x)
  
@@ -72,13 +72,13 @@ def CNN1D(classes):
     # x = layers.BatchNormalization()(x)
     # x = layers.MaxPooling1D(pool_size=2)(x)
 
-    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
+    x = layers.Conv1D(256,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
     x = layers.MaxPooling1D(pool_size=2)(x)
 
@@ -92,9 +92,6 @@ def CNN1D(classes):
     x = layers.BatchNormalization()(x)
     x = layers.Conv1D(512,3,padding='same',activation='elu')(x)
     x = layers.BatchNormalization()(x)
-
-
-    
     # x = layers.Conv1D(128,3,padding='same',activation='elu')(x)
     # x = layers.BatchNormalization()(x)
     # x = layers.Conv1D(128,3,padding='same',activation='elu')(x)
@@ -104,18 +101,16 @@ def CNN1D(classes):
     # x = layers.Conv1D(128,3,padding='same',activation='elu')(x)
     # x = layers.BatchNormalization()(x)
     x = layers.MaxPooling1D(pool_size=2)(x)
-    x = layers.Flatten()(x)
-    # x = layers.GlobalMaxPooling1D()(x)
+    x = layers.GlobalMaxPooling1D()(x)
 
     # x = layers.Flatten()(x)
     x = layers.Dropout(0.2)(x)
-    x = layers.Dense(units=754, activation = 'elu')(x)
-    x = layers.Dense(units=346, activation = 'elu')(x)
+    x = layers.Dense(units=512, activation = 'elu')(x)
+    x = layers.Dense(units=256, activation = 'elu')(x)
     # x = layers.Dense(units=128, activation = 'elu')(x)
     # x = layers.Dense(units=64, activation = 'elu')(x)
 
-    # output = layers.Dense(units=classes, activation = 'sigmoid')(x)
-    output = layers.Dense(units=classes, activation = 'softmax')(x)
+    output = layers.Dense(units=classes, activation = 'sigmoid')(x)
     
     CNN = tf.keras.Model(input,output,name='CNN1D')
     return CNN

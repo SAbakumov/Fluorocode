@@ -139,8 +139,9 @@ def PxTokb(arr,args):
     else:
         print('Unsupported data type in kbToPx, aborting execution')
     
-    
-    arr  =   (arr/stretch/nmbp)*pixelsz
+    if type(stretch)==list:
+        stretch=stretch[0]
+    arr  =   (arr/stretch/nmbp)*pixelsz/1000
     return arr
     
 def ZScoreTransform(trace):
@@ -187,7 +188,7 @@ def GetLocalNorm(trace,i,Params,SimTraces):
     elif Params["Norm"]:
         trace = (trace/np.std(trace)*100).astype(np.int16)
     else:
-        trace = (trace).astype(np.int16)
+        trace = (trace*100).astype(np.int16)
      
     return trace          
                        

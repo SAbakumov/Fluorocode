@@ -9,6 +9,7 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__)))
 
 from Bio import Entrez
 from Bio import SeqIO
+import Bio
 import Misc as msc
 import RandomTraceGenerator as RTG
 import random
@@ -31,7 +32,13 @@ class TSIMTraces:
         self.RandomTraces = []
         self.Map = []
         self.frag_size = frag_size
-        
+
+        ROOT_DIR = os.path.abspath(os.curdir)
+        self.DataBasePath = os.path.join(ROOT_DIR, 'DataBases')
+
+      def set_db_path(self, db_path):
+          self.DataBasePath = db_path
+
       def set_stretch(self, stretch):
           self.Stretch = stretch
         
@@ -85,26 +92,28 @@ class TSIMTraces:
         Entrez.email = "abakumov.sergey1997@gmail.com"
         
         
-        ROOT_DIR = os.path.abspath(os.curdir)
-        DataBasePath = os.path.join(ROOT_DIR, 'DataBases')
+        # ROOT_DIR = os.path.abspath(os.curdir)
+        # DataBasePath = os.path.join(ROOT_DIR, 'DataBases')
         search_term = self.Species
-        
-        FileName =  '%s.fasta' % search_term
-        
-        if not os.path.exists(os.path.join(DataBasePath,FileName )):
+        if ".fasta" not in search_term and ".fna" not in search_term:
+            FileName =  '%s.fasta' % search_term
+        else:
+            FileName = search_term
+        if not os.path.exists(os.path.join(self.DataBasePath,FileName )):
             handle = Entrez.efetch(db="nucleotide", id=search_term, rettype="fasta", retmode= 'text')
             
-            f = open(os.path.join(DataBasePath,FileName ), 'w')
+            f = open(os.path.join(self.DataBasePath,FileName ), 'w')
             f.write(handle.read())
             f.close()
         
-        genome = SeqIO.parse(os.path.join(DataBasePath,FileName ), "fasta")
+        genome = SeqIO.parse(os.path.join(self.DataBasePath,FileName ), "fasta")
 
-
+        CompleteSequence = []
         for record in genome:
-            CompleteSequence = record.seq
+            CompleteSequence.append(record.seq)
+        CompleteSequence = "".join([str(seq_rec) for seq_rec in CompleteSequence])
             
-        cuts = msc.rebasecuts(self.Enzyme,CompleteSequence )
+        cuts =  msc.rebasecuts(self.Enzyme,Bio.Seq.Seq(CompleteSequence) )
         
         
         return cuts
@@ -151,12 +160,13 @@ class TSIMTraces:
         u, c = np.unique(genome, return_counts=True)
         # c =  c*np.random.gamma(self.AmplitudeVariation[0],self.AmplitudeVariation[1],size = c.shape)
         # c =  c+c*np.random.uniform(-0.2,0.2,size = c.shape)
-        c = self.GetDyeAmp(c,-0.2,0.2)
+        # c = self.GetDyeAmp(c,-0.2,0.2)
         Trace[u]=Trace[u]+ c
         return Trace
         
       def GetDyeAmp(self,c,AmpVarMin,AmpVarMax):
           # c =  c+c*np.random.uniform(-0.2,0.2,size = c.shape)
+        #   c = c
           c = c* np.random.gamma(self.AmplitudeVariation[0],self.AmplitudeVariation[1],size =c.shape)
           return c
 
@@ -164,7 +174,9 @@ class TSIMTraces:
         if self.FPR>0:
             num_dyes = int( msc.PxTokb(self.frag_size, self)*self.FPR/1000)
             fpr_locs = np.random.uniform(self.region[0],self.region[1],num_dyes )
-            fpr_amps = self.GetDyeAmp(np.ones(fpr_locs.shape),-0.2,0.2)
+            # fpr_amps = self.GetDyeAmp(np.ones(fpr_locs.shape),-0.2,0.2)
+            fpr_amps = np.ones(fpr_locs.shape)
+
             # fpr_amps = np.random.gamma(self.AmplitudeVariation[0],self.AmplitudeVariation[1],size = num_dyes)
             trc[(fpr_locs).astype(np.int64)] =  trc[(fpr_locs).astype(np.int64)]+fpr_amps
 
@@ -172,17 +184,17 @@ class TSIMTraces:
                 num_dyes2 = int( msc.PxTokb(self.frag_size, self)*self.FPR2/1000)
                 fpr_locs = np.random.uniform(self.region[0],self.region[1],num_dyes2)
                 # fpr_amps = 2*np.random.gamma(self.AmplitudeVariation[0],self.AmplitudeVariation[1],size = num_dyes2)
-                fpr_amps = 2*self.GetDyeAmp(np.ones(fpr_locs.shape),-0.2,0.2)
+                fpr_amps = 2*np.ones(fpr_locs.shape)
 
                 trc[(fpr_locs).astype(np.int64)] =  trc[(fpr_locs).astype(np.int64)]+fpr_amps
     
 
         return trc
       def YieldWrongRegions(self,trc):
-          numregs = np.random.randint(2,5)
+          numregs = np.random.randint(3,7)
           for i in range(numregs):
               startind = self.region[0]+ np.random.randint(0,self.frag_size)
-              endind = startind + np.random.randint(15,35)
+              endind = startind + np.random.randint(20,35)
               trc[startind:endind] = np.random.permutation(trc[startind:endind])
           return trc
               

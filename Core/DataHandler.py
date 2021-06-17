@@ -231,9 +231,10 @@ class DataLoader():
                                 PrePos[assignmentarr[j]]  = pos[j]
                             PreLabels[assignmentarr[j],:,:] = Labels[j,:,:]
                             endcounts = j+1
+                        totcounts = endcounts
                     else:
                         TrainImages, LabelImages,Refs ,pos= self.LoadTrainingData(os.path.join(path,files[i]))
-
+                        # LBL = np.squeeze(LabelImages)
                         allcounts = endcounts
                         for j in range(endcounts,endcounts+TrainImages.shape[0]):
  
@@ -244,7 +245,9 @@ class DataLoader():
                             PreLabels[assignmentarr[j],:,:] = LabelImages[j-allcounts,:,:]
                             endcounts = j+1
 
-    
+        PreTrain = PreTrain[0:len(PreTrain)- totcounts,:,:]
+        PreLabels = PreLabels[0:len(PreLabels)- totcounts,:,:]
+
         return PreTrain, PreRefs, PreLabels, PrePos
     
     def LoadTrainingData(self,path):

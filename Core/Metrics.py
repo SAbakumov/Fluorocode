@@ -1,5 +1,5 @@
 #%%
-import json,os,sys,pickle,tensorflow as tf
+import json,time,os,sys,pickle,tensorflow as tf
 sys.path.insert(1, os.path.join(os.path.dirname(__file__),"Core"))
 
 import matplotlib.pyplot as plt
@@ -64,14 +64,20 @@ class EvalPerformance():
     def EvalRealData(self,tested_traces, index):
         tested_traces[index] = ( tested_traces[index]-np.min(tested_traces[index]))/np.std(tested_traces[index])
         tested_traces[index] = np.reshape(tested_traces[index],[1,len(tested_traces[index]),1])
+        
         output = self.model.predict(tested_traces[index] )
         plt.figure(figsize=(12,5))        
         plt.plot((tested_traces[index]).flatten(),linestyle = '--',Color='b')
         plt.plot(output[0],Color='r')
 
     def ClassifyData(self,data): 
+        
+        start_time = time.time()
+
         output = self.model.predict(data)
-        return output
+        t = time.time() - start_time
+
+        return t,np.array(output)
 
 #%%
 if __name__ == '__main__':

@@ -72,7 +72,7 @@ class TraceGenerator():
                 self.SimTraces.set_region(offset,self.FragmentSize,self.step)
                 self.SimTraces.get_EffLabelledProfile()
                 self.SimTraces.get_FPR()
-                # self.SimTraces.get_WrongRegions()
+                self.SimTraces.get_WrongRegions()
                 trc = self.SimTraces.get_FluorocodeProfile(self.Gauss)[0]
                 
                 
@@ -114,22 +114,25 @@ class TraceGenerator():
       RandomTraces = []
       RandomLabels = []
       positions = []
+      minNumDyesTotal = minNumDyes* Misc.PxTokb(self.FragmentSize, self.SimTraces)
+      maxNumDyesTotal = maxNumDyes* Misc.PxTokb(self.FragmentSize, self.SimTraces)
+
       self.Ds.set_savingformat(self.SaveFormatAsCSV)
 
       for i in range(0,len(self.StretchingFactor)):
               
             for offset in range(0,numprofiles):
 
-                numDyes =  np.random.randint(minNumDyes, maxNumDyes) 
+                numDyes =  np.random.randint(minNumDyesTotal, maxNumDyesTotal) 
                 trace   =  np.zeros([self.FragmentSize])
                 pos = np.random.uniform(0,self.FragmentSize,numDyes)
                 u, c = np.unique(pos.astype(np.int16), return_counts=True)
-                c = c* np.random.gamma(self.amplitude_variation[0],self.amplitude_variation[1],size = c.shape)
+                # c = c* np.random.gamma(self.amplitude_variation[0],self.amplitude_variation[1],size = c.shape)
 
                 trace[u] = trace[u]+ c
                 
                 trace = self.SimTraces.GetFluorocodeProfile([trace],self.Gauss)[0]
-                trc = trace+self.NoiseAmp*np.random.uniform(0,1,self.FragmentSize)
+                trc =  np.squeeze(trace+self.NoiseAmp*np.random.uniform(0,1,self.FragmentSize))
 
                 RandomTraces.append( Misc.GetLocalNorm(trc,i,self.Params,self.SimTraces))
                 RandomLabels.append( self.ObtainLabel(genome))
